@@ -4464,7 +4464,7 @@ SettingsTab:AddButton({
 	Func = function()
 		Unload()
 		print([[ // Reloading KAT.lol || Made by nikoleto scripts - github.com/nikoladhima \\ --]])
-		NikoletoScripts:LoadScript("Loader.lua", "Main.luau", "Loader.lua")
+		NikoletoScripts["LoadScript"]("Loader.lua", "Main.luau", "Loader.lua")
 	end
 })
 SettingsTab:AddButton({
