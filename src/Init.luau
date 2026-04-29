@@ -341,7 +341,7 @@ local Utils = (function()
 	return Utils
 end)()
 
-Context:LoadScript("src/Main.luau", "src/Init.luau", "src/Main.luau", {
+Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
 	["Start"] = Context["Start"],
 	["Version"] = Context["Version"],
 	["LoadScript"] = Context["LoadScript"],
