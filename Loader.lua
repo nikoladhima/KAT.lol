@@ -35,7 +35,7 @@ local Loader = {
 			end
 		end
 
-		local Result = self:LoadScript("Init.luau", "Loader.lua", self)
+		local Result = self:LoadScript("src/Init.luau", "Loader.lua", self)
 		if type(Result) == "table" and Result["Failed"] then
 			error("[KAT.lol/Loader | ERROR] Failed to load Init.luau: " .. tostring(Result["Value"]), 2)
 		end
