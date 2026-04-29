@@ -17,7 +17,7 @@ local Loader = {
 	["Init"] = function(self)
 		function self:LoadScript(Path: string, TargetFileName: string, ...: any): table
 			local Success, Result = xpcall(function(...)
-				loadstring(game:HttpGet("https://pastefy.app/shc29W9m/raw?part=" .. Path))(...)
+				loadstring(game:HttpGet("https://raw.githubusercontent.com/nikoladhima/KAT.lol/refs/heads/main/" .. Path))(...)
 			end, function(Error)
 				debug.traceback("LoadScript Error: " .. tostring(Error), 2)
 				task.spawn(error, "LoadScript Error: " .. tostring(Error), 2)
