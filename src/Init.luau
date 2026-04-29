@@ -6,7 +6,7 @@ if type(Context) ~= "table" then
     error("[KAT.lol/src/Init.luau | ERROR]: Argument must be a table.", 2)
 end
 
-local Environment = (function()
+local Environment = getgenv() or (function()
 	if not getgenv or typeof(getgenv) ~= "function" then
 		error("[KAT.lol/src/Init.luau | ERROR]: Global Environment is missing.", 2)
 	end
