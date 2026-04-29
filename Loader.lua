@@ -11,35 +11,34 @@ if workspace.DistributedGameTime < 3 then
 	task.wait(3 - workspace.DistributedGameTime)
 end
 
-local Loader = {
+local function LoadScript(Path: string, TargetFileName: string, ...: any): table
+	local Success, Result = xpcall(function(...)
+		local Success, Result = loadstring(game:HttpGet("https://raw.githubusercontent.com/nikoladhima/KAT.lol/refs/heads/main/" .. Path))
+		if not Success then
+			error("Compilation failed: " .. tostring(Result))
+		end
+
+		return Result(...)
+	end, function(Error)
+		return debug.traceback("LoadScript Error: " .. tostring(Error), 2)
+	end, ...)
+
+	if not Success then
+		return {
+			Failed = true,
+			Value = Result
+		}
+	end
+
+	if type(Result) == "table" and Result["Failed"] then
+		error("[KAT.lol/" .. Path .. " | ERROR] Failed to load " .. TargetFileName .. ", Result: " .. tostring(Result["Value"]), 2)
+	end
+
+	return Result
+end
+
+LoadScript("src/Init.luau", "Loader.lua", {
 	["Start"] = tick(),
 	["Version"] = "1.0.0U",
-	["Init"] = function(self)
-		function self:LoadScript(Path: string, TargetFileName: string, ...: any): table
-			local Success, Result = xpcall(function(...)
-				loadstring(game:HttpGet("https://raw.githubusercontent.com/nikoladhima/KAT.lol/refs/heads/main/" .. Path))(...)
-			end, function(Error)
-				debug.traceback("LoadScript Error: " .. tostring(Error), 2)
-				task.spawn(error, "LoadScript Error: " .. tostring(Error), 2)
-			end, ...)
-
-			if not Success then
-				return {
-					["Failed"] = true,
-					["Value"] = Result
-				}
-			end
-
-			if type(Result) == "table" and Result["Failed"] then
-				error("[KAT.lol/" .. Path .. " | ERROR] Failed to load " .. TargetFileName .. ", Result: " .. tostring(Result["Value"]), 2)
-			end
-		end
-
-		local Result = self:LoadScript("src/Init.luau", "Loader.lua", self)
-		if type(Result) == "table" and Result["Failed"] then
-			error("[KAT.lol/Loader | ERROR] Failed to load Init.luau: " .. tostring(Result["Value"]), 2)
-		end
-	end
-}
-
-return Loader:Init()
+	["LoadScript"] = LoadScript
+})
