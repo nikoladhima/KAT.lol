@@ -11,7 +11,7 @@ if workspace.DistributedGameTime < 3 then
 	task.wait(3 - workspace.DistributedGameTime)
 end
 
-local function LoadScript(Path: string, CurrentFileName: string, TargetFileName: string, ...: any): table
+local function LoadScript(Path: string, CurrentFileName: string, ...: any): table
 	local Success, Result = xpcall(function(...)
 		return loadstring(game:HttpGet("https://raw.githubusercontent.com/nikoladhima/KAT.lol/refs/heads/main/" .. Path))(...)
 	end, function(Error)
@@ -26,18 +26,18 @@ local function LoadScript(Path: string, CurrentFileName: string, TargetFileName:
 	end
 
 	if type(Result) == "table" and Result["Failed"] then
-		error("[KAT.lol/" .. CurrentFileName .. " | ERROR] Failed to load " .. TargetFileName .. ", Result: " .. tostring(Result["Value"]), 2)
+		error("[KAT.lol/" .. CurrentFileName .. " | ERROR] Failed to load " .. Path .. ", Result: " .. tostring(Result["Value"]), 2)
 	end
 
 	return Result
 end
 
-local Result = LoadScript("src/Init.luau", "Loader.lua", "src/Init.luau", {
+local Result = LoadScript("src/Init.luau", "Loader.lua", {
 	["Start"] = tick(),
 	["Version"] = "1.0.0U",
 	["LoadScript"] = LoadScript
 })
 
 if type(Result) == "table" and Result["Failed"] then
-    error("[KAT.lol] Fatal load error:\n" .. tostring(Result.Value), 0)
+    error("[KAT.lol] Fatal load error:\n" .. tostring(Result["Value"]), 0)
 end
