@@ -4205,7 +4205,7 @@ if getsenv and GetGunState then
 				end
 			end, 0.5))
 		end
-	})]]
+	})
 
 	WeaponsTab:AddToggle("ForceThrow", {
 		Text = "Force Throw",
@@ -4243,7 +4243,7 @@ if getsenv and GetGunState then
 				end
 			end, 0.5)
 		end
-	})
+	})]]
 
 	WeaponsTab:AddToggle("RapidThrow", {
 		Text = "Rapid Throw (Disables stabbing)",
@@ -4306,6 +4306,9 @@ if getsenv and GetGunState then
 					OldSettings = Settings
 					Settings.__nsRapidThrow = true
 				end
+				Settings.CanThrow = true
+				Settings.EquipTime = 0
+				Settings.SlashEquipDelay = 0
 				Settings.GrabTime = 0
 				Settings.ChargeTime = 1
 				Settings.EffectiveChargeTime = 1
