@@ -321,7 +321,7 @@ local Utils = (function()
         AddTab("AntiAimTab", LocalPlayerTabBox, "AddTab", "Anti Aim")
         AddTab("MovementTab", LocalPlayerTabBox, "AddTab", "Movement")
 
-        AddTab("LocalCharacterTab", Players, "AddRightGroupbox", "Local Character")
+        AddTab("LocalCharacterTab", Players, "AddRightGroupbox", "Local Char")
 
         AddTab("VisualsTab", Visuals, "AddLeftGroupbox", "Extra-Sensory Perception")
         AddTab("LightingTab", Visuals, "AddRightGroupbox", "Lighting")
@@ -341,7 +341,7 @@ local Utils = (function()
 	return Utils
 end)()
 
-Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
+Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 	["Start"] = Context["Start"],
 	["Version"] = Context["Version"],
 	["LoadScript"] = Context["LoadScript"],
@@ -1435,7 +1435,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
 
         --// Main Instances \\-
         local function SafeParentUI(Instance: Instance, Parent: Instance | () -> Instance)
-            local success, _error = pcall(function()
+            local Success, _error = pcall(function()
                 if not Parent then
                     Parent = CoreGui
                 end
@@ -1450,7 +1450,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                 Instance.Parent = DestinationParent
             end)
 
-            if not (success and Instance.Parent) then
+            if not (Success and Instance.Parent) then
                 Instance.Parent = Library.LocalPlayer:WaitForChild("PlayerGui", math.huge)
             end
         end
@@ -2724,7 +2724,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                                     task.wait(0.075)
 
                                     if UserInputService:IsKeyDown(Input.KeyCode) then
-                                        -- Add modifier to the key list --
+                                        -- Add modifier to the key List --
                                         if not table.find(ActiveModifiers, ModifiersInput[Input.KeyCode]) then
                                             ActiveModifiers[#ActiveModifiers + 1] = ModifiersInput[Input.KeyCode]
                                             KeyPicker:Display(table.concat(ActiveModifiers, " + ") .. " + ...")
@@ -7575,7 +7575,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
         local ThemeManager = {}
         do
             local ThemeFields = {"FontColor", "MainColor", "AccentColor", "BackgroundColor", "OutlineColor"}
-            ThemeManager.Folder = "ObsidianLibSettings"
+            ThemeManager.Folder = "NikoletoScripts/KAT.lol"
 
             ThemeManager.Library = nil
             ThemeManager.AppliedToTab = false
@@ -7666,12 +7666,12 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
             function ThemeManager:GetPaths()
                 local Paths = {}
 
-                local parts = self.Folder:split("/")
-                for Index = 1, #parts do
-                    Paths[#Paths + 1] = table.concat(parts, "/", 1, Index)
+                local Parts = self.Folder:split("/")
+                for Index = 1, #Parts do
+                    Paths[#Paths + 1] = table.concat(Parts, "/", 1, Index)
                 end
 
-                Paths[#Paths + 1] = self.Folder .. "/themes"
+                Paths[#Paths + 1] = self.Folder .. "/Themes"
 
                 return Paths
             end
@@ -7697,21 +7697,16 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                 task.wait(0.1)
             end
 
-            function ThemeManager:SetFolder(folder)
-                self.Folder = folder
-                self:BuildFolderTree()
-            end
-
             --// Apply, Update theme \\--
             function ThemeManager:ApplyTheme(theme)
                 local customThemeData = self:GetCustomTheme(theme)
-                local data = customThemeData or self.BuiltInThemes[theme]
+                local Data = customThemeData or self.BuiltInThemes[theme]
 
-                if not data then
+                if not Data then
                     return
                 end
 
-                local scheme = data[2]
+                local scheme = Data[2]
                 for Index, val in pairs(customThemeData or scheme) do
                     if Index == "VideoLink" then
                         continue
@@ -7744,14 +7739,14 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
             end
 
             --// Get, Load, Save, Delete, Refresh \\--
-            function ThemeManager:GetCustomTheme(file)
-                local Path = self.Folder .. "/themes/" .. file .. ".json"
+            function ThemeManager:GetCustomTheme(File)
+                local Path = self.Folder .. "/Themes/" .. File .. ".json"
                 return FileManager:Exists(Path) and FileManager:ReadJSON(Path) or nil
             end
 
             function ThemeManager:LoadDefault()
                 local theme = "Default"
-                local content = FileManager:Read(self.Folder .. "/themes/default.txt")
+                local content = FileManager:Read(self.Folder .. "/Themes/default.txt")
 
                 local isDefault = true
                 if content then
@@ -7773,7 +7768,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
             end
 
             function ThemeManager:SaveDefault(theme)
-                FileManager:Write(self.Folder .. "/themes/default.txt", theme)
+                FileManager:Write(self.Folder .. "/Themes/default.txt", theme)
             end
 
             function ThemeManager:SetDefaultTheme(theme)
@@ -7820,9 +7815,9 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                 self.Library:UpdateColorsUsingRegistry()
             end
 
-            function ThemeManager:SaveCustomTheme(file)
-                if file:gsub(" ", "") == "" then
-                    self.Library:Notify("Invalid file Name for theme (empty)", 3)
+            function ThemeManager:SaveCustomTheme(File)
+                if File:gsub(" ", "") == "" then
+                    self.Library:Notify("Invalid File Name for theme (empty)", 3)
                     return
                 end
 
@@ -7832,65 +7827,59 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                 end
                 theme["FontFace"] = self.Library.Options["FontFace"].Value
 
-                FileManager:WriteJSON(self.Folder .. "/themes/" .. file .. ".json", theme)
+                FileManager:WriteJSON(self.Folder .. "/Themes/" .. File .. ".json", theme)
             end
 
             function ThemeManager:Delete(Name)
                 if not Name then
-                    return false, "no config file is selected"
+                    return false, "no config File is selected"
                 end
 
-                local file = self.Folder .. "/themes/" .. Name .. ".json"
-                if not FileManager:Exist(file) then
-                    return false, "invalid file"
+                local File = self.Folder .. "/Themes/" .. Name .. ".json"
+                if not FileManager:Exist(File) then
+                    return false, "invalid File"
                 end
 
-                FileManager:DeleteFile(file)
+                FileManager:DeleteFile(File)
                 return true
             end
 
             function ThemeManager:ReloadCustomThemes()
-                local list = FileManager:List(self.Folder .. "/themes")
+                local List = FileManager:List(self.Folder .. "/Themes")
 
-                local out = {}
-                for i = 1, #list do
-                    local file = list[i]
-                    if file:sub(-5) == ".json" then
-                        -- i hate this but it has to be done ...
+                local Out = {}
+                for i = 1, #List do
+                    local File = List[i]
+                    if File:sub(-5) == ".json" then
+                        local Start = File:find(".json", 1, true)
+                        local Position = Start
 
-                        local pos = file:find(".json", 1, true)
-                        local start = pos
-
-                        local char = file:sub(pos, pos)
-                        while char ~= "/" and char ~= "\\" and char ~= "" do
-                            pos = pos - 1
-                            char = file:sub(pos, pos)
+                        local Char = File:sub(Position, Position)
+                        while Char ~= "/" and Char ~= "\\" and Char ~= "" do
+                            Position += 1
+                            Char = File:sub(Position, Position)
                         end
 
-                        if char == "/" or char == "\\" then
-                            table.insert(out, file:sub(pos + 1, start - 1))
+                        if Char == "/" or Char == "\\" then
+                            table.insert(Out, File:sub(Position + 1, Start - 1))
                         end
                     end
                 end
 
-                return out
+                return Out
             end
 
             --// GUI \\--
-            function ThemeManager:CreateThemeManager(groupbox)
-                groupbox
-                    :AddLabel("Background color")
-                    :AddColorPicker("BackgroundColor", { Default = self.Library.Scheme.BackgroundColor })
-                groupbox:AddLabel("Main color"):AddColorPicker("MainColor", { Default = self.Library.Scheme.MainColor })
-                groupbox:AddLabel("Accent color"):AddColorPicker("AccentColor", { Default = self.Library.Scheme.AccentColor })
-                groupbox
-                    :AddLabel("Outline color")
-                    :AddColorPicker("OutlineColor", { Default = self.Library.Scheme.OutlineColor })
-                groupbox:AddLabel("Font color"):AddColorPicker("FontColor", { Default = self.Library.Scheme.FontColor })
-                groupbox:AddDropdown("FontFace", {
+            function ThemeManager:CreateThemeManager(Groupbox)
+                Groupbox:AddLabel("Background color"):AddColorPicker("BackgroundColor", { Default = self.Library.Scheme.BackgroundColor })
+                Groupbox:AddLabel("Main color"):AddColorPicker("MainColor", { Default = self.Library.Scheme.MainColor })
+                Groupbox:AddLabel("Accent color"):AddColorPicker("AccentColor", { Default = self.Library.Scheme.AccentColor })
+                Groupbox:AddLabel("Outline color"):AddColorPicker("OutlineColor", { Default = self.Library.Scheme.OutlineColor })
+                Groupbox:AddLabel("Font color"):AddColorPicker("FontColor", { Default = self.Library.Scheme.FontColor })
+                Groupbox:AddDropdown("FontFace", {
                     Text = "Font Face",
                     Default = "Code",
-                    Values = { "BuilderSans", "Code", "Fantasy", "Gotham", "Jura", "Roboto", "RobotoMono", "SourceSans" },
+                    Values = {"BuilderSans", "Code", "Fantasy", "Gotham", "Jura", "Roboto", "RobotoMono", "SourceSans"},
                 })
 
                 local ThemesArray = {}
@@ -7898,14 +7887,14 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                     table.insert(ThemesArray, Name)
                 end
 
-                table.sort(ThemesArray, function(a, b)
-                    return self.BuiltInThemes[a][1] < self.BuiltInThemes[b][1]
+                table.sort(ThemesArray, function(A, B)
+                    return self.BuiltInThemes[A][1] < self.BuiltInThemes[B][1]
                 end)
 
-                groupbox:AddDivider()
+                Groupbox:AddDivider()
 
-                groupbox:AddDropdown("ThemeManager_ThemeList", { Text = "Theme list", Values = ThemesArray, Default = 1 })
-                groupbox:AddButton("Set as default", function()
+                Groupbox:AddDropdown("ThemeManager_ThemeList", { Text = "Theme List", Values = ThemesArray, Default = 1 })
+                Groupbox:AddButton("Set as default", function()
                     self:SaveDefault(self.Library.Options.ThemeManager_ThemeList.Value)
                     self.Library:Notify(
                         string.format("Set default theme to %q", self.Library.Options.ThemeManager_ThemeList.Value)
@@ -7916,10 +7905,10 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                     self:ApplyTheme(self.Library.Options.ThemeManager_ThemeList.Value)
                 end)
 
-                groupbox:AddDivider()
+                Groupbox:AddDivider()
 
-                groupbox:AddInput("ThemeManager_CustomThemeName", { Text = "Custom theme Name" })
-                groupbox:AddButton("Create theme", function()
+                Groupbox:AddInput("ThemeManager_CustomThemeName", { Text = "Custom theme Name" })
+                Groupbox:AddButton("Create theme", function()
                     local Name = self.Library.Options.ThemeManager_CustomThemeName.Value
 
                     if Name:gsub(" ", "") == "" then
@@ -7934,30 +7923,30 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                     self.Library.Options.ThemeManager_CustomThemeList:SetValue(nil)
                 end)
 
-                groupbox:AddDivider()
+                Groupbox:AddDivider()
 
-                groupbox:AddDropdown(
+                Groupbox:AddDropdown(
                     "ThemeManager_CustomThemeList",
                     { Text = "Custom themes", Values = self:ReloadCustomThemes(), AllowNull = true, Default = 1 }
                 )
-                groupbox:AddButton("Load theme", function()
+                Groupbox:AddButton("Load theme", function()
                     local Name = self.Library.Options.ThemeManager_CustomThemeList.Value
 
                     self:ApplyTheme(Name)
                     self.Library:Notify(string.format("Loaded theme %q", Name))
                 end)
-                groupbox:AddButton("Overwrite theme", function()
+                Groupbox:AddButton("Overwrite theme", function()
                     local Name = self.Library.Options.ThemeManager_CustomThemeList.Value
 
                     self:SaveCustomTheme(Name)
                     self.Library:Notify(string.format("Overwrote config %q", Name))
                 end)
-                groupbox:AddButton("Delete theme", function()
+                Groupbox:AddButton("Delete theme", function()
                     local Name = self.Library.Options.ThemeManager_CustomThemeList.Value
 
-                    local success, err = self:Delete(Name)
-                    if not success then
-                        self.Library:Notify("Failed to delete theme: " .. err)
+                    local Success, Error = self:Delete(Name)
+                    if not Success then
+                        self.Library:Notify("Failed to delete theme: " .. Error)
                         return
                     end
 
@@ -7965,11 +7954,11 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                     self.Library.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
                     self.Library.Options.ThemeManager_CustomThemeList:SetValue(nil)
                 end)
-                groupbox:AddButton("Refresh list", function()
+                Groupbox:AddButton("Refresh List", function()
                     self.Library.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
                     self.Library.Options.ThemeManager_CustomThemeList:SetValue(nil)
                 end)
-                groupbox:AddButton("Set as default", function()
+                Groupbox:AddButton("Set as default", function()
                     if
                         self.Library.Options.ThemeManager_CustomThemeList.Value ~= nil
                         and self.Library.Options.ThemeManager_CustomThemeList.Value ~= ""
@@ -7980,8 +7969,8 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                         )
                     end
                 end)
-                groupbox:AddButton("Reset default", function()
-                    FileManager:DeleteFile(self.Folder .. "/themes/default.txt")
+                Groupbox:AddButton("Reset default", function()
+                    FileManager:DeleteFile(self.Folder .. "/Themes/default.txt")
                     self.Library:Notify("Set default theme to nothing")
                     self.Library.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
                     self.Library.Options.ThemeManager_CustomThemeList:SetValue(nil)
@@ -8012,13 +8001,13 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
 
             function ThemeManager:ApplyToTab(tab)
                 assert(self.Library, "Must set ThemeManager.Library first!")
-                local groupbox = self:CreateGroupBox(tab)
-                self:CreateThemeManager(groupbox)
+                local Groupbox = self:CreateGroupBox(tab)
+                self:CreateThemeManager(Groupbox)
             end
 
-            function ThemeManager:ApplyToGroupbox(groupbox)
+            function ThemeManager:ApplyToGroupbox(Groupbox)
                 assert(self.Library, "Must set ThemeManager.Library first!")
-                self:CreateThemeManager(groupbox)
+                self:CreateThemeManager(Groupbox)
             end
 
             ThemeManager:BuildFolderTree()
@@ -8029,14 +8018,13 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
 
     GetSaveManager = function()
         local SaveManager = {} do
-            SaveManager.Folder = "ObsidianLibSettings"
-            SaveManager.SubFolder = ""
+            SaveManager.Folder = "NikoletoScripts/KAT.lol"
             SaveManager.Ignore = {}
             SaveManager.Library = nil
             SaveManager.Parser = {
                 Toggle = {
                     Save = function(Index, Object)
-                        return { type = "Toggle", Index = Index, value = Object.Value }
+                        return { Type = "Toggle", Index = Index, value = Object.Value }
                     end,
                     Load = function(Index, Data)
                         local Object = SaveManager.Library.Toggles[Index]
@@ -8047,7 +8035,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                 },
                 Slider = {
                     Save = function(Index, Object)
-                        return { type = "Slider", Index = Index, value = tostring(Object.Value) }
+                        return { Type = "Slider", Index = Index, value = tostring(Object.Value) }
                     end,
                     Load = function(Index, Data)
                         local Object = SaveManager.Library.Options[Index]
@@ -8058,7 +8046,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                 },
                 Dropdown = {
                     Save = function(Index, Object)
-                        return { type = "Dropdown", Index = Index, value = Object.Value, multi = Object.Multi }
+                        return { Type = "Dropdown", Index = Index, value = Object.Value, multi = Object.Multi }
                     end,
                     Load = function(Index, Data)
                         local object = SaveManager.Library.Options[Index]
@@ -8069,7 +8057,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                 },
                 ColorPicker = {
                     Save = function(Index, Object)
-                        return { type = "ColorPicker", Index = Index, value = Object.Value:ToHex(), transparency = Object.Transparency }
+                        return { Type = "ColorPicker", Index = Index, value = Object.Value:ToHex(), transparency = Object.Transparency }
                     end,
                     Load = function(Index, Data)
                         if SaveManager.Library.Options[Index] then
@@ -8079,7 +8067,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                 },
                 KeyPicker = {
                     Save = function(Index, Object)
-                        return { type = "KeyPicker", Index = Index, mode = Object.Mode, key = Object.Value, modifiers = Object.Modifiers }
+                        return { Type = "KeyPicker", Index = Index, mode = Object.Mode, key = Object.Value, modifiers = Object.Modifiers }
                     end,
                     Load = function(Index, Data)
                         if SaveManager.Library.Options[Index] then
@@ -8089,7 +8077,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                 },
                 Input = {
                     Save = function(Index, Object)
-                        return { type = "Input", Index = Index, text = Object.Value }
+                        return { Type = "Input", Index = Index, text = Object.Value }
                     end,
                     Load = function(Index, Data)
                         local Object = SaveManager.Library.Options[Index]
@@ -8112,40 +8100,19 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
             end
 
             --// Folders \\--
-            function SaveManager:CheckSubFolder(createFolder)
-                if typeof(self.SubFolder) ~= "string" or self.SubFolder == "" then return false end
-
-                if createFolder == true then
-                    if not FileManager:IsFolder(self.Folder .. "/settings/" .. self.SubFolder) then
-                        FileManager:CreateFolder(self.Folder .. "/settings/" .. self.SubFolder)
-                    end
-                end
-
-                return true
-            end
-
             function SaveManager:GetPaths()
                 local Paths = {}
 
-                local parts = self.Folder:split("/")
-                for Index = 1, #parts do
-                    local path = table.concat(parts, "/", 1, Index)
-                    if not table.find(Paths, path) then Paths[#Paths + 1] = path end
-                end
-
-                Paths[#Paths + 1] = self.Folder .. "/themes"
-                Paths[#Paths + 1] = self.Folder .. "/settings"
-
-                if self:CheckSubFolder(false) then
-                    local subFolder = self.Folder .. "/settings/" .. self.SubFolder
-                    parts = subFolder:split("/")
-
-                    for Index = 1, #parts do
-                        local path = table.concat(parts, "/", 1, Index)
-                        if not table.find(Paths, path) then Paths[#Paths + 1] = path end
+                local Parts = self.Folder:split("/")
+                for Index = 1, #Parts do
+                    local Path = table.concat(Parts, "/", 1, Index)
+                    if not table.find(Paths, Path) then
+                        Paths[#Paths + 1] = Path
                     end
                 end
 
+                Paths[#Paths + 1] = self.Folder .. "/Themes"
+                Paths[#Paths + 1] = self.Folder .. "/Settings"
                 return Paths
             end
 
@@ -8174,28 +8141,13 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                 end
             end
 
-            function SaveManager:SetFolder(folder)
-                self.Folder = folder
-                self:BuildFolderTree()
-            end
-
-            function SaveManager:SetSubFolder(folder)
-                self.SubFolder = folder
-                self:BuildFolderTree()
-            end
-
             --// Save, Load, Delete, Refresh \\--
             function SaveManager:Save(Name)
                 if not Name then
-                    return false, "no config file is selected"
+                    return false, "no config File is selected"
                 end
+
                 SaveManager:CheckFolderTree()
-
-                local fullPath = self.Folder .. "/settings/" .. Name .. ".json"
-                if SaveManager:CheckSubFolder(true) then
-                    fullPath = self.Folder .. "/settings/" .. self.SubFolder .. "/" .. Name .. ".json"
-                end
-
                 local Objects = {}
 
                 for Index, Toggle in pairs(self.Library.Toggles) do
@@ -8212,31 +8164,26 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                     table.insert(Objects, self.Parser[Option.Type].Save(Index, Option))
                 end
 
-                FileManager:WriteJSON(fullPath, {Objects = Objects})
+                FileManager:WriteJSON(self.Folder .. "/Settings/" .. Name .. ".json", {Objects = Objects})
                 return true
             end
 
             function SaveManager:Load(Name)
                 if not Name then
-                    return false, "no config file is selected"
+                    return false, "no config File is selected"
                 end
                 SaveManager:CheckFolderTree()
 
-                local file = self.Folder .. "/settings/" .. Name .. ".json"
-                if SaveManager:CheckSubFolder(true) then
-                    file = self.Folder .. "/settings/" .. self.SubFolder .. "/" .. Name .. ".json"
-                end
-
-                local Decoded = FileManager:ReadJSON(file)
+                local Decoded = FileManager:ReadJSON(self.Folder .. "/Settings/" .. Name .. ".json")
                 if not Decoded then
                     return false
                 end
 
                 for _,Option in pairs(Decoded.Objects) do
-                    if not Option.type or not self.Parser[Option.type] or self.Ignore[Option.Index] then
+                    if not Option.Type or not self.Parser[Option.Type] or self.Ignore[Option.Index] then
                         continue
                     end
-                    task.spawn(self.Parser[Option.type].Load, Option.Index, Option) -- task.spawn() so the config loading wont get stuck.
+                    task.spawn(self.Parser[Option.Type].Load, Option.Index, Option) -- task.spawn() so the config loading wont get stuck.
                 end
 
                 return true
@@ -8244,98 +8191,79 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
 
             function SaveManager:Delete(Name)
                 if not Name then
-                    return false, "no config file is selected"
+                    return false, "no config File is selected"
                 end
 
-                local file = self.Folder .. "/settings/" .. Name .. ".json"
-                if SaveManager:CheckSubFolder(true) then
-                    file = self.Folder .. "/settings/" .. self.SubFolder .. "/" .. Name .. ".json"
-                end
-
-                FileManager:DeleteFile(file)
+                FileManager:DeleteFile(self.Folder .. "/Settings/" .. Name .. ".json")
                 return true
             end
 
             function SaveManager:RefreshConfigList()
-                local success, data = pcall(function()
+                local Success, Data = pcall(function()
                     SaveManager:CheckFolderTree()
 
-                    local list = {}
-                    local out = {}
+                    local List = FileManager:List(self.Folder .. "/Settings")
+                    local Out = {}
 
-                    if SaveManager:CheckSubFolder(true) then
-                        list = FileManager:List(self.Folder .. "/settings/" .. self.SubFolder)
-                    else
-                        list = FileManager:List(self.Folder .. "/settings")
+                    if type(List) ~= "table" then
+                        List = {}
                     end
-                    if typeof(list) ~= "table" then list = {} end
 
-                    for i = 1, #list do
-                        local file = list[i]
-                        if file:sub(-5) == ".json" then
-                            -- i hate this but it has to be done ...
+                    for Index = 1, #List do
+                        local File = List[Index]
+                        if File:sub(-5) == ".json" then
+                            local Start = File:find(".json", 1, true)
+                            local Position = Start
 
-                            local pos = file:find(".json", 1, true)
-                            local start = pos
-
-                            local char = file:sub(pos, pos)
-                            while char ~= "/" and char ~= "\\" and char ~= "" do
-                                pos = pos - 1
-                                char = file:sub(pos, pos)
+                            local Char = File:sub(Position, Position)
+                            while Char ~= "/" and Char ~= "\\" and Char ~= "" do
+                                Position -= 1
+                                Char = File:sub(Position, Position)
                             end
 
-                            if char == "/" or char == "\\" then
-                                table.insert(out, file:sub(pos + 1, start - 1))
+                            if Char == "/" or Char == "\\" then
+                                table.insert(Out, File:sub(Position + 1, Start - 1))
                             end
                         end
                     end
 
-                    return out
+                    return Out
                 end)
 
-                if (not success) then
+                if not Success then
                     if self.Library then
-                        self.Library:Notify("Failed to load config list: " .. tostring(data))
+                        self.Library:Notify("Failed to load config List: " .. tostring(Data))
                     else
-                        warn("Failed to load config list: " .. tostring(data))
+                        warn("Failed to load config List: " .. tostring(Data))
                     end
 
                     return {}
                 end
 
-                return data
+                return Data
             end
 
             --// Auto Load \\--
             function SaveManager:GetAutoloadConfig()
                 SaveManager:CheckFolderTree()
 
-                local AutoLoadPath = self.Folder .. "/settings/autoload.txt"
-                if SaveManager:CheckSubFolder(true) then
-                    AutoLoadPath = self.Folder .. "/settings/" .. self.SubFolder .. "/autoload.txt"
-                end
-
+                local AutoLoadPath = self.Folder .. "/Settings/autoload.txt"
                 if FileManager:IsFile(AutoLoadPath) then
-                    return FileManager:Read(AutoLoadPath) or "none"
+                    return FileManager:Read(AutoLoadPath) or "None"
                 end
 
-                return "none"
+                return "None"
             end
 
             function SaveManager:LoadAutoloadConfig()
                 SaveManager:CheckFolderTree()
+                local AutoLoadPath = self.Folder .. "/Settings/autoload.txt"
+                if FileManager:IsFile(AutoLoadPath) then
+                    local Name = FileManager:Read(AutoLoadPath)
 
-                local autoLoadPath = self.Folder .. "/settings/autoload.txt"
-                if SaveManager:CheckSubFolder(true) then
-                    autoLoadPath = self.Folder .. "/settings/" .. self.SubFolder .. "/autoload.txt"
-                end
-
-                if FileManager:IsFile(autoLoadPath) then
-                    local Name = FileManager:Read(autoLoadPath)
-
-                    local success, err = self:Load(Name)
-                    if not success then
-                        self.Library:Notify("Failed to load autoload config: " .. err)
+                    local Success, Error = self:Load(Name)
+                    if not Success then
+                        self.Library:Notify("Failed to load autoload config: " .. Error)
                         return
                     end
 
@@ -8345,25 +8273,13 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
 
             function SaveManager:SaveAutoloadConfig(Name)
                 SaveManager:CheckFolderTree()
-
-                local autoLoadPath = self.Folder .. "/settings/autoload.txt"
-                if SaveManager:CheckSubFolder(true) then
-                    autoLoadPath = self.Folder .. "/settings/" .. self.SubFolder .. "/autoload.txt"
-                end
-
-                FileManager:WriteFile(autoLoadPath, Name)
+                FileManager:WriteFile(self.Folder .. "/Settings/autoload.txt", Name)
                 return true, ""
             end
 
             function SaveManager:DeleteAutoLoadConfig()
                 SaveManager:CheckFolderTree()
-
-                local autoLoadPath = self.Folder .. "/settings/autoload.txt"
-                if SaveManager:CheckSubFolder(true) then
-                    autoLoadPath = self.Folder .. "/settings/" .. self.SubFolder .. "/autoload.txt"
-                end
-
-                FileManager:DeleteFile(autoLoadPath)
+                FileManager:DeleteFile(self.Folder .. "/Settings/autoload.txt")
                 return true, ""
             end
 
@@ -8382,9 +8298,9 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                         return
                     end
 
-                    local success, err = self:Save(Name)
-                    if not success then
-                        self.Library:Notify("Failed to create config: " .. err)
+                    local Success, Error = self:Save(Name)
+                    if not Success then
+                        self.Library:Notify("Failed to create config: " .. Error)
                         return
                     end
 
@@ -8395,13 +8311,13 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
 
                 section:AddDivider()
 
-                section:AddDropdown("SaveManager_ConfigList", { Text = "Config list", Values = self:RefreshConfigList(), AllowNull = true })
+                section:AddDropdown("SaveManager_ConfigList", { Text = "Config List", Values = self:RefreshConfigList(), AllowNull = true })
                 section:AddButton("Load config", function()
                     local Name = self.Library.Options.SaveManager_ConfigList.Value
 
-                    local success, err = self:Load(Name)
-                    if not success then
-                        self.Library:Notify("Failed to load config: " .. err)
+                    local Success, Error = self:Load(Name)
+                    if not Success then
+                        self.Library:Notify("Failed to load config: " .. Error)
                         return
                     end
 
@@ -8410,9 +8326,9 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                 section:AddButton("Overwrite config", function()
                     local Name = self.Library.Options.SaveManager_ConfigList.Value
 
-                    local success, err = self:Save(Name)
-                    if not success then
-                        self.Library:Notify("Failed to overwrite config: " .. err)
+                    local Success, Error = self:Save(Name)
+                    if not Success then
+                        self.Library:Notify("Failed to overwrite config: " .. Error)
                         return
                     end
 
@@ -8422,9 +8338,9 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                 section:AddButton("Delete config", function()
                     local Name = self.Library.Options.SaveManager_ConfigList.Value
 
-                    local success, err = self:Delete(Name)
-                    if not success then
-                        self.Library:Notify("Failed to delete config: " .. err)
+                    local Success, Error = self:Delete(Name)
+                    if not Success then
+                        self.Library:Notify("Failed to delete config: " .. Error)
                         return
                     end
 
@@ -8433,7 +8349,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                     self.Library.Options.SaveManager_ConfigList:SetValue(nil)
                 end)
 
-                section:AddButton("Refresh list", function()
+                section:AddButton("Refresh List", function()
                     self.Library.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
                     self.Library.Options.SaveManager_ConfigList:SetValue(nil)
                 end)
@@ -8441,9 +8357,9 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                 section:AddButton("Set as autoload", function()
                     local Name = self.Library.Options.SaveManager_ConfigList.Value
 
-                    local success, err = self:SaveAutoloadConfig(Name)
-                    if not success then
-                        self.Library:Notify("Failed to set autoload config: " .. err)
+                    local Success, Error = self:SaveAutoloadConfig(Name)
+                    if not Success then
+                        self.Library:Notify("Failed to set autoload config: " .. Error)
                         return
                     end
 
@@ -8451,19 +8367,17 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
                     self.AutoloadConfigLabel:SetText("Current autoload config: " .. Name)
                 end)
                 section:AddButton("Reset autoload", function()
-                    local success, err = self:DeleteAutoLoadConfig()
-                    if not success then
-                        self.Library:Notify("Failed to set autoload config: " .. err)
+                    local Success, Error = self:DeleteAutoLoadConfig()
+                    if not Success then
+                        self.Library:Notify("Failed to set autoload config: " .. Error)
                         return
                     end
 
-                    self.Library:Notify("Set autoload to none")
-                    self.AutoloadConfigLabel:SetText("Current autoload config: none")
+                    self.Library:Notify("Set autoload to None")
+                    self.AutoloadConfigLabel:SetText("Current autoload config: None")
                 end)
 
                 self.AutoloadConfigLabel = section:AddLabel("Current autoload config: " .. self:GetAutoloadConfig(), true)
-
-                -- self:LoadAutoloadConfig()
                 self:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName" })
             end
 
@@ -8504,4 +8418,4 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", "src/Main.luau", {
         }, "getsenv", nil),
         ["getconnections"] = FunctionManager.Validate({"getconnections", "get_connections"}, "getconnections", nil)
 	}
-}--[["src/Main.luau"]])
+})
