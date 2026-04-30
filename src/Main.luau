@@ -50,6 +50,7 @@ if not GetGunState then
 					break
 				end
 			end
+
 			return GunState
 		end
 	end
@@ -67,6 +68,7 @@ else
 				break
 			end
 		end
+
 		return GunState
 	end
 end
@@ -4464,7 +4466,7 @@ SettingsTab:AddButton({
 	Func = function()
 		Unload()
 		print([[ // Reloading KAT.lol || Made by nikoleto scripts - github.com/nikoladhima \\ --]])
-		NikoletoScripts["LoadScript"]("Loader.lua", "Main.luau", "Loader.lua")
+		NikoletoScripts["LoadScript"]("Loader.lua", "Main.luau")
 	end
 })
 SettingsTab:AddButton({
@@ -4492,7 +4494,6 @@ if FileManager then
 	local ThemeManager = NikoletoScripts:GetThemeManager()
 	if ThemeManager then
 		ThemeManager:SetLibrary(UI)
-		ThemeManager:SetFolder("NikoletoScripts/KAT.lol/Themes")
 		ThemeManager:SetDefaultTheme({
 			BackgroundColor = Color3.fromRGB(15, 15, 15),
 			MainColor = Color3.fromRGB(25, 25, 25),
@@ -4511,7 +4512,6 @@ if FileManager then
 		SaveManager:SetLibrary(UI)
 		SaveManager:IgnoreThemeSettings()
 		SaveManager:SetIgnoreIndexes({"MenuKeybind"})
-		SaveManager:SetFolder("NikoletoScripts/KAT.lol/Configs")
 		SaveManager:BuildConfigSection(Tabs.SettingsWindow)
 		SaveManager:LoadAutoloadConfig()
 	else
