@@ -11,7 +11,7 @@ if workspace.DistributedGameTime < 3 then
 	task.wait(3 - workspace.DistributedGameTime)
 end
 
-local function LoadScript(Path: string, CurrentFileName: string, ...: any): table
+local function LoadScript(Path, CurrentFileName, ...)
 	local Success, Result = xpcall(function(...)
 		return loadstring(game:HttpGet("https://raw.githubusercontent.com/nikoladhima/KAT.lol/refs/heads/main/" .. Path))(...)
 	end, function(Error)
@@ -34,7 +34,7 @@ end
 
 local Result = LoadScript("src/Init.luau", "Loader.lua", {
 	["Start"] = tick(),
-	["Version"] = "1.0.4",
+	["Version"] = "1.1.0",
 	["LoadScript"] = LoadScript
 })
 
