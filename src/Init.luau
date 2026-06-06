@@ -1,6 +1,3 @@
---!optimize 2
---!native
-
 local Context = (...)
 if type(Context) ~= "table" then
     error("[KAT.lol/src/Init.luau | ERROR]: Argument must be a table.", 2)
@@ -28,7 +25,7 @@ print("[KAT.lol/src/Init.luau | INFO]: Successfully fetched the Drawing Environm
 local ConnectionManager = (function()
 	local ConnectionManager = {Connections = {}}
 
-	function ConnectionManager:Connect(Name: string, Connection: RBXScriptConnection): RBXScriptConnection
+	function ConnectionManager:Connect(Name, Connection)
 		local Existing = self.Connections[Name]
 		if Existing then
 			Existing:Disconnect()
@@ -37,7 +34,7 @@ local ConnectionManager = (function()
 		return Connection
 	end
 
-	function ConnectionManager:Disconnect(Name: string)
+	function ConnectionManager:Disconnect(Name)
 		local Connection = self.Connections[Name]
 		if Connection then
 			Connection:Disconnect()
@@ -62,14 +59,14 @@ local FunctionManager = (function()
 
     local FunctionManager = {}
 
-    local function GetFunction(FunctionName: string): any
+    local function GetFunction(FunctionName)
         local Function = Environment[FunctionName]
         if type(Function) == "function" then
             return Function
         end
     end
 
-    function FunctionManager.Validate(Name: string | {string}, UNCName: string?, Fallback: any): any
+    function FunctionManager.Validate(Name, UNCName, Fallback)
         local Cache = Environment.ns__FunctionManagerCache
 
         if UNCName and Cache[UNCName] then
@@ -101,24 +98,17 @@ local FunctionManager = (function()
     return FunctionManager
 end)()
 
-local ServiceManager = (function()
-	local ServiceManager, Services = {}, {}
-    setmetatable(ServiceManager, {
-		__index = function(_, Service)
-			return Services[Service]
-		end,
+local ServiceManager = setmetatable({}, {
+    __index = function(self, Name)
+        local Service = game:GetService(Name)
+        rawset(self, Name, Service)
+        return Service
+    end,
 
-		__call = function()
-			return Services.Players.LocalPlayer
-		end
-	})
-
-    for _,Name in ipairs({"UserInputService", "ReplicatedStorage", "SoundService", "TweenService", "HttpService", "TextService", "RunService", "Lighting", "CoreGui", "Players", "Teams"}) do
-        Services[Name] = game:GetService(Name)
+    __call = function(self)
+        return self.Players.LocalPlayer
     end
-
-	return ServiceManager
-end)()
+})
 
 local FileManager = (function()
 	local IsFolder = FunctionManager.Validate({"isfolder", "is_folder"}, "isfolder", nil)
@@ -138,40 +128,40 @@ local FileManager = (function()
     local HttpService = ServiceManager["HttpService"]
 	local FileManager = {}
 
-	function FileManager:IsFile(Path: string): boolean?
+	function FileManager:IsFile(Path)
         return IsFile(Path)
 	end
 
-	function FileManager:IsFolder(Path: string): boolean?
+	function FileManager:IsFolder(Path)
 		return IsFolder(Path)
 	end
 
-	function FileManager:CreateFolder(Path: string)
+	function FileManager:CreateFolder(Path)
 		if not IsFolder(Path) then
 			MakeFolder(Path)
 		end
 	end
 
-	function FileManager:DeleteFolder(Path: string)
+	function FileManager:DeleteFolder(Path)
 		if IsFolder(Path) then
 			DeleteFolder(Path)
 		end
 	end
 
-	function FileManager:DeleteFile(Path: string)
+	function FileManager:DeleteFile(Path)
 		if IsFile(Path) then
 			DeleteFile(Path)
 		end
 	end
 
-	function FileManager:Read(Path: string): string?
+	function FileManager:Read(Path)
 		if IsFile(Path) then
 			return ReadFile(Path)
 		end
 		return nil
 	end
 
-	function FileManager:ReadJSON(Path: string): string?
+	function FileManager:ReadJSON(Path)
 		if IsFile(Path) then
             local Content = ReadFile(Path)
 			return Content and HttpService:JSONDecode(Content) or ""
@@ -179,51 +169,26 @@ local FileManager = (function()
 		return nil
 	end
 
-	function FileManager:Write(Path: string, Content: string)
+	function FileManager:Write(Path, Content)
 		WriteFile(Path, Content)
 	end
 
-	function FileManager:WriteJSON(Path: string, Content: string)
+	function FileManager:WriteJSON(Path, Content)
 		WriteFile(Path, HttpService:JSONEncode(Content))
 	end
 
-	function FileManager:List(Path: string): {string}
+	function FileManager:List(Path)
 		return ListFiles(Path) or {}
 	end
 
-	function FileManager:Exists(Path: string): boolean
+	function FileManager:Exists(Path)
 		return IsFile(Path) or IsFolder(Path)
 	end
 
 	return setmetatable(FileManager, {
-        __call = function(self: table, Function: any): table
-            local BaseDirectory = "NikoletoScripts/KAT.lol"
-
+        __call = function()
             FileManager:CreateFolder("NikoletoScripts")
-            FileManager:CreateFolder(BaseDirectory)
-
-            local function Invite(Code: string): string
-                pcall(Function, {
-                    Url = 'http://127.0.0.1:6463/rpc?v=1',
-                    Method = 'POST',
-                    Headers = {
-                        ['Content-Type'] = 'application/json',
-                        Origin = 'https://discord.com'
-                    },
-                    Body = HttpService:JSONEncode({
-                        cmd = 'INVITE_BROWSER',
-                        nonce = HttpService:GenerateGUID(false),
-                        args = {code = Code}
-                    })
-                })
-                return Code
-            end
-
-            if not FileManager:Exists("Invited") then
-                FileManager:Write(BaseDirectory .. "/InviteCode", Invite("DwRT2nH93D"))
-                FileManager:Write("Invited", "")
-            end
-            
+            FileManager:CreateFolder("NikoletoScripts/KAT.lol")
             return FileManager
         end
     })
@@ -232,17 +197,17 @@ end)()
 local RunService = (function()
 	local RunService, Service = {}, ServiceManager["RunService"]
 
-	function RunService:BindToRenderStep(Name: string, Priority: number, Function: (...any) -> ()): RBXScriptConnection
+	function RunService:BindToRenderStep(Name, Priority, Function)
 		return Service:BindToRenderStep(Name, Priority, Function)
 	end
 
-	function RunService:UnbindFromRenderStep(Name: string): any
+	function RunService:UnbindFromRenderStep(Name)
 		return Service:UnbindFromRenderStep(Name)
 	end
 
 	for _,EventName in {"Stepped", "RenderStepped", "Heartbeat"} do
 		local Event = Service[EventName]
-		RunService[EventName] = function(Function: (...any) -> ())
+		RunService[EventName] = function(Function)
 			return Event:Connect(Function)
 		end
 		RunService[EventName .. "Wait"] = function()
@@ -256,11 +221,11 @@ end)()
 local Utils = (function()
 	local Utils = {}
 
-	function Utils.GenerateGUID(WrapInCurlyBraces: boolean): string
+	function Utils.GenerateGUID(WrapInCurlyBraces)
 		return ServiceManager["HttpService"]:GenerateGUID(WrapInCurlyBraces)
 	end
 
-	function Utils.Create(Type: string, Parent: Instance?, Properties: table?): Instance
+	function Utils.Create(Type, Parent, Properties)
 		local Object = Instance.new(Type)
 
 		if Properties then
@@ -276,20 +241,20 @@ local Utils = (function()
 		return Object
 	end
 
-	function Utils.SetEnabled(Object: Instance, Value: boolean)
+	function Utils.SetEnabled(Object, Value)
 		if Object.Enabled ~= Value then
 			Object.Enabled = Value
 		end
 	end
 
-	function Utils.GetDistanceSquared(Point1: Vector3, Point2: Vector3): number
+	function Utils.GetDistanceSquared(Point1, Point2)
 		local DeltaX = Point1.X - Point2.X
 		local DeltaY = Point1.Y - Point2.Y
 		local DeltaZ = Point1.Z - Point2.Z
 		return DeltaX * DeltaX + DeltaY * DeltaY + DeltaZ * DeltaZ
 	end
 
-    function Utils.CreateWindow(Library): any
+    function Utils.CreateWindow(Library)
         local Success, Window = pcall(function()
             return Library:CreateWindow({ Icon = "130975824766445" })
         end)
@@ -355,7 +320,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
     ["ServiceManager"] = ServiceManager,
 	["DrawingManager"] = (function()
         local DrawingManager = setmetatable({}, {
-            __call = function(_,DrawingType: string, Properties: {[string]: any}?)
+            __call = function(_,DrawingType, Properties)
                 local DrawingObject = Drawing.new(DrawingType)
                 if Properties then
                     for Property, Value in next, Properties do
@@ -366,7 +331,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             end
         })
 
-        function DrawingManager:Remove(DrawingObject: DrawingObject)
+        function DrawingManager:Remove(DrawingObject)
             pcall(function()
                 DrawingObject:Remove()
             end)
@@ -377,7 +342,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 	["ThreadManager"] = (function()
         local ThreadManager = {Threads = {}}
 
-        function ThreadManager:Start(Name: string, Callback: () -> (), Interval: number)
+        function ThreadManager:Start(Name, Callback, Interval)
             if self.Threads[Name] then
                 return
             end
@@ -397,7 +362,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             end)
         end
 
-        function ThreadManager:Stop(Name: string)
+        function ThreadManager:Stop(Name)
             local Thread = self.Threads[Name]
             if Thread then
                 Thread.Kill()
@@ -405,7 +370,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             end
         end
 
-        function ThreadManager:Exists(Name: string): boolean
+        function ThreadManager:Exists(Name)
             return self.Threads[Name] ~= nil
         end
 
@@ -462,7 +427,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             },
         }
         do
-            local function RecursiveCreatePath(Path: string, IsFile: boolean?)
+            local function RecursiveCreatePath(Path, IsFile)
                 if not FileManager then
                     return
                 end
@@ -482,12 +447,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 return TraversedPath
             end
 
-            function CustomImageManager.AddAsset(
-                AssetName: string,
-                RobloxAssetId: number,
-                URL: string,
-                ForceRedownload: boolean?
-            )
+            function CustomImageManager.AddAsset(AssetName, RobloxAssetId, URL, ForceRedownload)
                 if CustomImageManagerAssets[AssetName] ~= nil then
                     error(string.format("Asset %q already exists", AssetName))
                 end
@@ -505,7 +465,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 CustomImageManager.DownloadAsset(AssetName, ForceRedownload)
             end
 
-            function CustomImageManager.GetAsset(AssetName: string)
+            function CustomImageManager.GetAsset(AssetName)
                 if not CustomImageManagerAssets[AssetName] then
                     return nil
                 end
@@ -520,7 +480,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 return AssetID
             end
 
-            function CustomImageManager.DownloadAsset(AssetName: string, ForceRedownload: boolean?)
+            function CustomImageManager.DownloadAsset(AssetName, ForceRedownload)
                 if not FileManager then
                     return
                 end
@@ -615,7 +575,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
         }
 
         local Templates = {
-            --// UI \\-
             Frame = {
                 BorderSizePixel = 0,
             },
@@ -660,10 +619,9 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
             },
 
-            --// Library \\--
             Window = {
-                Title = "KAT.LOL",
-                Footer = "Version: v" .. Context["Version"],
+                Title = "KAT.lol",
+                Footer = "v" .. Context["Version"] .. " | discord.gg/DwRT2nH93D",
                 Position = UDim2.fromOffset(6, 6),
                 Size = UDim2.fromOffset(1000, 520),
                 IconSize = UDim2.fromOffset(30, 30),
@@ -766,7 +724,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 Visible = true,
             },
 
-            --// Addons \\-
             KeyPicker = {
                 Text = "KeyPicker",
                 Default = "None",
@@ -797,7 +754,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             Right = { 0.5, 1 },
         }
 
-        --// Scheme Functions \\--
         local SchemeReplaceAlias = {
             RedColor = "Red",
             WhiteColor = "White",
@@ -832,7 +788,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             return Library.Scheme[Index]
         end
 
-        --// Basic Functions \\--
         local function WaitForEvent(Event, Timeout, Condition)
             local Bindable = Create("BindableEvent")
             local Connection = Event:Once(function(...)
@@ -853,27 +808,27 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             return Result
         end
 
-        local function IsMouseInput(Input: InputObject, IncludeM2: boolean?)
+        local function IsMouseInput(Input, IncludeM2)
             return Input.UserInputType == Enum.UserInputType.MouseButton1
                 or (IncludeM2 == true and Input.UserInputType == Enum.UserInputType.MouseButton2)
                 or Input.UserInputType == Enum.UserInputType.Touch
         end
-        local function IsClickInput(Input: InputObject, IncludeM2: boolean?)
+        local function IsClickInput(Input, IncludeM2)
             return IsMouseInput(Input, IncludeM2)
                 and Input.UserInputState == Enum.UserInputState.Begin
                 and Library.IsRobloxFocused
         end
-        local function IsHoverInput(Input: InputObject)
+        local function IsHoverInput(Input)
             return (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch)
                 and Input.UserInputState == Enum.UserInputState.Change
         end
-        local function IsDragInput(Input: InputObject, IncludeM2: boolean?)
+        local function IsDragInput(Input, IncludeM2)
             return IsMouseInput(Input, IncludeM2)
                 and (Input.UserInputState == Enum.UserInputState.Begin or Input.UserInputState == Enum.UserInputState.Change)
                 and Library.IsRobloxFocused
         end
 
-        local function GetTableSize(Table: { [any]: any })
+        local function GetTableSize(Table)
             local Size = 0
 
             for _, _ in Table do
@@ -882,14 +837,14 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 
             return Size
         end
-        local function StopTween(Tween: TweenBase)
+        local function StopTween(Tween)
             if not (Tween and Tween.PlaybackState == Enum.PlaybackState.Playing) then
                 return
             end
 
             Tween:Cancel()
         end
-        local function Trim(Text: string)
+        local function Trim(Text)
             return Text:match("^%s*(.-)%s*$")
         end
         local function Round(Value, Rounding)
@@ -935,10 +890,8 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     ElementInfo.Holder.Visible = false
                     continue
                 elseif ElementInfo.SubButton then
-                    --// Check if any of the Buttons Name matches with Search
                     local Visible = false
 
-                    --// Check if Search matches Element's Name and if Element is Visible
                     if ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
                         Visible = true
                     else
@@ -957,7 +910,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     continue
                 end
 
-                --// Check if Search matches Element's Name and if Element is Visible
                 if ElementInfo.Text and ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
                     ElementInfo.Holder.Visible = true
                     VisibleElements += 1
@@ -1006,7 +958,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 
             local HasVisible = false
 
-            --// Loop through Groupboxes to get Elements Info
             for _, Groupbox in Tab.Groupboxes do
                 local VisibleElements = 0
 
@@ -1015,10 +966,8 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                         ElementInfo.Holder.Visible = false
                         continue
                     elseif ElementInfo.SubButton then
-                        --// Check if any of the Buttons Name matches with Search
                         local Visible = false
 
-                        --// Check if Search matches Element's Name and if Element is Visible
                         if ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
                             Visible = true
                         else
@@ -1037,7 +986,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                         continue
                     end
 
-                    --// Check if Search matches Element's Name and if Element is Visible
                     if ElementInfo.Text and ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
                         ElementInfo.Holder.Visible = true
                         VisibleElements += 1
@@ -1054,7 +1002,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     VisibleElements += CheckDepbox(Depbox, Search)
                 end
 
-                --// Update Groupbox Size and Visibility if found any element
                 if VisibleElements > 0 then
                     Groupbox:Resize()
                     HasVisible = true
@@ -1074,10 +1021,8 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                             ElementInfo.Holder.Visible = false
                             continue
                         elseif ElementInfo.SubButton then
-                            --// Check if any of the Buttons Name matches with Search
                             local Visible = false
 
-                            --// Check if Search matches Element's Name and if Element is Visible
                             if ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
                                 Visible = true
                             else
@@ -1096,7 +1041,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                             continue
                         end
 
-                        --// Check if Search matches Element's Name and if Element is Visible
                         if ElementInfo.Text and ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
                             ElementInfo.Holder.Visible = true
                             VisibleElements[SubTab] += 1
@@ -1128,7 +1072,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     end
                 end
 
-                --// Update Tabbox Visibility if any visible
                 Tabbox.BoxHolder.Visible = VisibleTabs > 0
             end
 
@@ -1294,7 +1237,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             end
         end
 
-        function Library:SetDPIScale(DPIScale: number)
+        function Library:SetDPIScale(DPIScale)
             Library.DPIScale = DPIScale / 100
             Library.MinSize = Library.OriginalMinSize * Library.DPIScale
 
@@ -1313,7 +1256,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             end
         end
 
-        function Library:GiveSignal(Connection: RBXScriptConnection | RBXScriptSignal)
+        function Library:GiveSignal(Connection)
             local ConnectionType = typeof(Connection)
             if Connection and (ConnectionType == "RBXScriptConnection" or ConnectionType == "RBXScriptSignal") then
                 table.insert(Library.Signals, Connection)
@@ -1322,31 +1265,14 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             return Connection
         end
 
-        function IsValidCustomIcon(Icon: string)
-            return typeof(Icon) == "string"
-                and (Icon:match("rbxasset") or Icon:match("roblox%.com/asset/%?id=") or Icon:match("rbxthumb://type="))
+        function IsValidCustomIcon(Icon)
+            return typeof(Icon) == "string" and (Icon:match("rbxasset") or Icon:match("roblox%.com/asset/%?id=") or Icon:match("rbxthumb://type="))
         end
-
-        type Icon = {
-            Url: string,
-            Id: number,
-            IconName: string,
-            ImageRectOffset: Vector2,
-            ImageRectSize: Vector2,
-        }
-
-        type IconModule = {
-            Icons: { string },
-            GetAsset: (Name: string) -> Icon?,
-        }
-
         local FetchIcons, Icons = pcall(function()
-            return (loadstring(
-                game:HttpGet("https://raw.githubusercontent.com/deividcomsono/lucide-roblox-direct/refs/heads/main/source.lua")
-            ) :: () -> IconModule)()
+            return loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/lucide-roblox-direct/refs/heads/main/source.lua"))()
         end)
 
-        function Library:GetIcon(IconName: string)
+        function Library:GetIcon(IconName)
             if not FetchIcons then
                 return
             end
@@ -1358,7 +1284,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             return Icon
         end
 
-        function Library:GetCustomIcon(IconName: string)
+        function Library:GetCustomIcon(IconName)
             if not IsValidCustomIcon(IconName) then
                 return Library:GetIcon(IconName)
             else
@@ -1371,7 +1297,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             end
         end
 
-        function Library:Validate(Table: { [string]: any }, Template: { [string]: any }): { [string]: any }
+        function Library:Validate(Table, Template)
             if typeof(Table) ~= "table" then
                 return Template
             end
@@ -1391,8 +1317,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             return Table
         end
 
-        --// Creator Functions \\--
-        local function FillInstance(Table: { [string]: any }, Instance: GuiObject)
+        local function FillInstance(Table, Instance)
             local ThemeProperties = Library.Registry[Instance] or {}
 
             for key, value in Table do
@@ -1416,7 +1341,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             end
         end
 
-        local function New(ClassName: string, Properties: { [string]: any }): any
+        local function New(ClassName, Properties)
             local Instance = Create(ClassName)
 
             if Templates[ClassName] then
@@ -1433,8 +1358,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             return Instance
         end
 
-        --// Main Instances \\-
-        local function SafeParentUI(Instance: Instance, Parent: Instance | () -> Instance)
+        local function SafeParentUI(Instance, Parent)
             local Success, _error = pcall(function()
                 if not Parent then
                     Parent = CoreGui
@@ -1455,7 +1379,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             end
         end
 
-        local function ParentUI(UI: Instance, SkipHiddenUI: boolean?)
+        local function ParentUI(UI, SkipHiddenUI)
             if SkipHiddenUI then
                 SafeParentUI(UI, CoreGui)
                 return
@@ -1494,7 +1418,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             Parent = ScreenGui,
         })
 
-        --// Notification
         local NotificationArea
         local NotificationList
         do
@@ -1519,8 +1442,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             })
         end
 
-        --// Lib Functions \\--
-        function Library:GetBetterColor(Color: Color3, Add: number): Color3
+        function Library:GetBetterColor(Color, Add)
             Add = Add * (Library.IsLightTheme and -4 or 2)
             return Color3.fromRGB(
                 math.clamp(Color.R * 255 + Add, 0, 255),
@@ -1529,12 +1451,12 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             )
         end
 
-        function Library:GetLighterColor(Color: Color3): Color3
+        function Library:GetLighterColor(Color)
             local H, S, V = Color:ToHSV()
             return Color3.fromHSV(H, math.max(0, S - 0.1), math.min(1, V + 0.1))
         end
 
-        function Library:GetDarkerColor(Color: Color3): Color3
+        function Library:GetDarkerColor(Color)
             local H, S, V = Color:ToHSV()
             return Color3.fromHSV(H, S, V / 2)
         end
@@ -1547,7 +1469,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             return KeyCode.Name
         end
 
-        function Library:GetTextBounds(Text: string, Font: Font, Size: number, Width: number?): (number, number)
+        function Library:GetTextBounds(Text, Font: Font, Size, Width): (number, number)
             local Params = Create("GetTextBoundsParams", nil, {
                 Text = Text,
                 RichText = true,
@@ -1560,7 +1482,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             return Bounds.X, Bounds.Y
         end
 
-        function Library:MouseIsOverFrame(Frame: GuiObject, Mouse: Vector2): boolean
+        function Library:MouseIsOverFrame(Frame, Mouse)
             local AbsPos, AbsSize = Frame.AbsolutePosition, Frame.AbsoluteSize
             return Mouse.X >= AbsPos.X
                 and Mouse.X <= AbsPos.X + AbsSize.X
@@ -1568,7 +1490,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 and Mouse.Y <= AbsPos.Y + AbsSize.Y
         end
 
-        function Library:SafeCallback(Func: (...any) -> ...any, ...: any)
+        function Library:SafeCallback(Func, ...)
             if not (Func and typeof(Func) == "function") then
                 return
             end
@@ -1589,12 +1511,12 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             return table.unpack(Result, 2, Result.n)
         end
 
-        function Library:MakeDraggable(UI: GuiObject, DragFrame: GuiObject, IgnoreToggled: boolean?, IsMainWindow: boolean?)
+        function Library:MakeDraggable(UI, DragFrame, IgnoreToggled, IsMainWindow)
             local StartPos
             local FramePos
             local Dragging = false
             local Changed
-            DragFrame.InputBegan:Connect(function(Input: InputObject)
+            DragFrame.InputBegan:Connect(function(Input)
                 if not IsClickInput(Input) or IsMainWindow and Library.CantDragForced then
                     return
                 end
@@ -1615,7 +1537,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     end
                 end)
             end)
-            Library:GiveSignal(UserInputService.InputChanged:Connect(function(Input: InputObject)
+            Library:GiveSignal(UserInputService.InputChanged:Connect(function(Input)
                 if
                     (not IgnoreToggled and not Library.Toggled)
                     or (IsMainWindow and Library.CantDragForced)
@@ -1638,13 +1560,13 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             end))
         end
 
-        function Library:MakeResizable(UI: GuiObject, DragFrame: GuiObject, Callback: () -> ()?)
+        function Library:MakeResizable(UI, DragFrame, Callback)
             local StartPos
             local FrameSize
             local Dragging = false
             local Changed
 
-            DragFrame.InputBegan:Connect(function(Input: InputObject)
+            DragFrame.InputBegan:Connect(function(Input)
                 if not IsClickInput(Input) then
                     return
                 end
@@ -1666,7 +1588,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 end)
             end)
 
-            Library:GiveSignal(UserInputService.InputChanged:Connect(function(Input: InputObject)
+            Library:GiveSignal(UserInputService.InputChanged:Connect(function(Input)
                 if not UI.Visible or not (ScreenGui and ScreenGui.Parent) then
                     Dragging = false
                     if Changed and Changed.Connected then
@@ -1692,7 +1614,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             end))
         end
 
-        function Library:MakeCover(Holder: GuiObject, Place: string)
+        function Library:MakeCover(Holder, Place)
             local Pos = Places[Place] or { 0, 0 }
             local Size = Sizes[Place] or { 1, 0.5 }
 
@@ -1707,7 +1629,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             return Cover
         end
 
-        function Library:MakeLine(Frame: GuiObject, Info)
+        function Library:MakeLine(Frame, Info)
             local Line = New("Frame", {
                 AnchorPoint = Info.AnchorPoint or Vector2.zero,
                 BackgroundColor3 = "OutlineColor",
@@ -1720,7 +1642,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             return Line
         end
 
-        function Library:AddOutline(Frame: GuiObject)
+        function Library:AddOutline(Frame)
             local OutlineStroke = New("UIStroke", {
                 Color = "OutlineColor",
                 Thickness = 1,
@@ -1736,7 +1658,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             return OutlineStroke, ShadowStroke
         end
 
-        function Library:AddBlank(Frame: GuiObject, Size: UDim2)
+        function Library:AddBlank(Frame, Size)
             return New("Frame", {
                 BackgroundTransparency = 1,
                 Size = Size or UDim2.fromScale(0, 0),
@@ -1744,7 +1666,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             })
         end
 
-        function Library:AddDraggableLabel(Text: string)
+        function Library:AddDraggableLabel(Text)
             local Table = {}
 
             local Label = New("TextLabel", {
@@ -1780,18 +1702,18 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 
             Table.Label = Label
 
-            function Table:SetText(Text: string)
+            function Table:SetText(Text)
                 Label.Text = Text
             end
 
-            function Table:SetVisible(Visible: boolean)
+            function Table:SetVisible(Visible)
                 Label.Visible = Visible
             end
 
             return Table
         end
 
-        function Library:AddDraggableButton(Text: string, Func, ExcludeScaling: boolean?)
+        function Library:AddDraggableButton(Text, Func, ExcludeScaling)
             local Table = {}
 
             local Button = New("TextButton", {
@@ -1822,7 +1744,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 
             Table.Button = Button
 
-            function Table:SetText(Text: string)
+            function Table:SetText(Text)
                 local X, Y = Library:GetTextBounds(Text, Library.Scheme.Font, 16)
 
                 Button.Text = Text
@@ -1833,7 +1755,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             return Table
         end
 
-        function Library:AddDraggableMenu(Name: string)
+        function Library:AddDraggableMenu(Name)
             local Holder = New("Frame", {
                 AutomaticSize = Enum.AutomaticSize.XY,
                 BackgroundColor3 = "BackgroundColor",
@@ -1895,15 +1817,8 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             return Holder, Container
         end
 
-        --// Context Menu \\--
         local CurrentMenu
-        function Library:AddContextMenu(
-            Holder: GuiObject,
-            Size: UDim2 | () -> (),
-            Offset: { [number]: number } | () -> {},
-            List: number?,
-            ActiveCallback: (Active: boolean) -> ()?
-        )
+        function Library:AddContextMenu(Holder,  Size, Offset, List, ActiveCallback)
             local Menu
             if List then
                 Menu = New("ScrollingFrame", {
@@ -2032,7 +1947,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             return Table
         end
 
-        Library:GiveSignal(UserInputService.InputBegan:Connect(function(Input: InputObject)
+        Library:GiveSignal(UserInputService.InputBegan:Connect(function(Input)
             if Library.Unloaded then
                 return
             end
@@ -2052,7 +1967,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             end
         end))
 
-        --// Tooltip \\--
         local TooltipLabel = New("TextLabel", {
             AutomaticSize = Enum.AutomaticSize.Y,
             BackgroundColor3 = "BackgroundColor",
@@ -2093,7 +2007,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
         end)
 
         local CurrentHoverInstance
-        function Library:AddTooltip(InfoStr: string, DisabledInfoStr: string, HoverInstance: GuiObject)
+        function Library:AddTooltip(InfoStr, DisabledInfoStr, HoverInstance)
             local TooltipTable = {
                 Disabled = false,
                 Hovering = false,
@@ -2202,7 +2116,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
         local KeyIcon = Library:GetIcon("key")
         local MoveIcon = Library:GetIcon("move")
 
-        function Library:SetIconModule(module: IconModule)
+        function Library:SetIconModule(module)
             FetchIcons = true
             Icons = module
 
@@ -2225,9 +2139,9 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 
                 local KeyPicker = {
                     Text = Info.Text,
-                    Value = Info.Default, -- Key
-                    Modifiers = Info.DefaultModifiers, -- Modifiers
-                    DisplayValue = Info.Default, -- Picker Text
+                    Value = Info.Default,
+                    Modifiers = Info.DefaultModifiers,
+                    DisplayValue = Info.Default,
 
                     Toggled = false,
                     Mode = Info.Mode,
@@ -2259,7 +2173,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 
                 local Picking = false
 
-                -- Special Keys
                 local SpecialKeys = {
                     ["MB1"] = Enum.UserInputType.MouseButton1,
                     ["MB2"] = Enum.UserInputType.MouseButton2,
@@ -2272,7 +2185,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     [Enum.UserInputType.MouseButton3] = "MB3",
                 }
 
-                -- Modifiers
                 local Modifiers = {
                     ["LAlt"] = Enum.KeyCode.LeftAlt,
                     ["RAlt"] = Enum.KeyCode.RightAlt,
@@ -2385,7 +2297,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     return ValidModifiers
                 end
 
-                KeyPicker.Modifiers = VerifyModifiers(KeyPicker.Modifiers) -- Verify default modifiers
+                KeyPicker.Modifiers = VerifyModifiers(KeyPicker.Modifiers)
 
                 local Picker = New("TextButton", {
                     BackgroundColor3 = "MainColor",
@@ -2466,7 +2378,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                         Checkbox.Visible = not Normal
                     end
 
-                    KeyPicker.DoClick = function(...) end --// make luau lsp shut up
+                    KeyPicker.DoClick = function(...) end
                     Holder.MouseButton1Click:Connect(function()
                         if KeybindsToggle.Normal then
                             return
@@ -2687,7 +2599,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Picker.Text = "..."
                     Picker.Size = UDim2.fromOffset(29, 18)
 
-                    -- Wait for an non modifier key --
                     local Input
                     local ActiveModifiers = {}
 
@@ -2696,10 +2607,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                         return UserInputService:GetFocusedTextBox() ~= nil
                     end
 
-                    repeat
-                        task.wait()
-
-                        -- Wait for any input --
+                    repeat task.wait()
                         Picker.Text = "..."
                         Picker.Size = UDim2.fromOffset(29, 18)
 
@@ -2709,12 +2617,10 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                             return
                         end
 
-                        -- Escape --
                         if Input.KeyCode == Enum.KeyCode.Escape then
                             break
                         end
 
-                        -- Handle modifier keys --
                         if IsModifierInput(Input) then
                             local StopLoop = false
 
@@ -2724,30 +2630,26 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                                     task.wait(0.075)
 
                                     if UserInputService:IsKeyDown(Input.KeyCode) then
-                                        -- Add modifier to the key List --
                                         if not table.find(ActiveModifiers, ModifiersInput[Input.KeyCode]) then
                                             ActiveModifiers[#ActiveModifiers + 1] = ModifiersInput[Input.KeyCode]
                                             KeyPicker:Display(table.concat(ActiveModifiers, " + ") .. " + ...")
                                         end
 
-                                        -- Wait for another input --
                                         if GetInput() then
                                             StopLoop = true
-                                            break -- Invalid Input
+                                            break
                                         end
 
-                                        -- Escape --
                                         if Input.KeyCode == Enum.KeyCode.Escape then
                                             break
                                         end
 
-                                        -- Stop loop if its a normal key --
                                         if not IsModifierInput(Input) then
                                             break
                                         end
                                     else
                                         if not table.find(ActiveModifiers, ModifiersInput[Input.KeyCode]) then
-                                            break -- Modifier is meant to be used as a normal key --
+                                            break
                                         end
                                     end
                                 end
@@ -2760,7 +2662,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                             end
                         end
 
-                        break -- Input found, end loop
+                        break
                     until false
 
                     local Key = "Unknown"
@@ -2782,13 +2684,12 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 end)
                 Picker.MouseButton2Click:Connect(MenuTable.Toggle)
 
-                Library:GiveSignal(UserInputService.InputBegan:Connect(function(Input: InputObject)
+                Library:GiveSignal(UserInputService.InputBegan:Connect(function(Input)
                     if Library.Unloaded then
                         return
                     end
 
-                    if
-                        KeyPicker.Mode == "Always"
+                    if KeyPicker.Mode == "Always"
                         or KeyPicker.Value == "Unknown"
                         or KeyPicker.Value == "None"
                         or Picking
@@ -2898,7 +2799,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Parent = Holder,
                 })
 
-                --// Color Menu \\--
                 local ColorMenu = Library:AddContextMenu(
                     Holder,
                     UDim2.fromOffset(Info.Transparency and 256 or 234, 0),
@@ -2940,7 +2840,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Parent = ColorHolder,
                 })
 
-                --// Sat Map
                 local SatVipMap = New("ImageButton", {
                     BackgroundColor3 = ColorPicker.Value,
                     Image = "rbxassetid://4155801252",
@@ -2963,7 +2862,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Parent = SatVibCursor,
                 })
 
-                --// Hue
                 local HueSelector = New("TextButton", {
                     Size = UDim2.fromOffset(16, 200),
                     Text = "",
@@ -2985,7 +2883,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Parent = HueSelector,
                 })
 
-                --// Alpha
                 local TransparencySelector, TransparencyColor, TransparencyCursor
                 if Info.Transparency then
                     TransparencySelector = New("ImageButton", {
@@ -3055,7 +2952,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Parent = InfoHolder,
                 })
 
-                --// Context Menu \\--
                 local ContextMenu = Library:AddContextMenu(Holder, UDim2.fromOffset(93, 0), function()
                     return { Holder.AbsoluteSize.X + 1.5, 0.5 }
                 end, 1)
@@ -3080,7 +2976,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                         Library.CopiedColor = { ColorPicker.Value, ColorPicker.Transparency }
                     end)
 
-                    ColorPicker.SetValueRGB = function(...) end --// make luau lsp shut up
+                    ColorPicker.SetValueRGB = function(...) end
                     CreateButton("Paste color", function()
                         ColorPicker:SetValueRGB(Library.CopiedColor[1], Library.CopiedColor[2])
                     end)
@@ -3098,8 +2994,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                         end)
                     end
                 end
-
-                --// End \\--
 
                 function ColorPicker:SetHSVFromRGB(Color)
                     ColorPicker.Hue, ColorPicker.Sat, ColorPicker.Vib = Color:ToHSV()
@@ -3175,7 +3069,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 Holder.MouseButton1Click:Connect(ColorMenu.Toggle)
                 Holder.MouseButton2Click:Connect(ContextMenu.Toggle)
 
-                SatVipMap.InputBegan:Connect(function(Input: InputObject)
+                SatVipMap.InputBegan:Connect(function(Input)
                     while IsDragInput(Input) do
                         local MinX = SatVipMap.AbsolutePosition.X
                         local MaxX = MinX + SatVipMap.AbsoluteSize.X
@@ -3197,7 +3091,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                         RunService.RenderSteppedWait()
                     end
                 end)
-                HueSelector.InputBegan:Connect(function(Input: InputObject)
+                HueSelector.InputBegan:Connect(function(Input)
                     while IsDragInput(Input) do
                         local Min = HueSelector.AbsolutePosition.Y
                         local Max = Min + HueSelector.AbsoluteSize.Y
@@ -3214,7 +3108,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     end
                 end)
                 if TransparencySelector then
-                    TransparencySelector.InputBegan:Connect(function(Input: InputObject)
+                    TransparencySelector.InputBegan:Connect(function(Input)
                         while IsDragInput(Input) do
                             local Min = TransparencySelector.AbsolutePosition.Y
                             local Max = TransparencySelector.AbsolutePosition.Y + TransparencySelector.AbsoluteSize.Y
@@ -3390,14 +3284,14 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Parent = Container,
                 })
 
-                function Label:SetVisible(Visible: boolean)
+                function Label:SetVisible(Visible)
                     Label.Visible = Visible
 
                     TextLabel.Visible = Label.Visible
                     Groupbox:Resize()
                 end
 
-                function Label:SetText(Text: string)
+                function Label:SetText(Text)
                     Label.Text = Text
                     TextLabel.Text = Text
 
@@ -3594,7 +3488,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                                 Library:SafeCallback(Button.Func)
                             end
 
-                            RunService.RenderSteppedWait() --// Mouse Button fires without waiting (i hate roblox)
+                            RunService.RenderSteppedWait()
                             Button.Locked = false
                             return
                         end
@@ -3646,7 +3540,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                             or "MainColor"
                     end
 
-                    function SubButton:SetDisabled(Disabled: boolean)
+                    function SubButton:SetDisabled(Disabled)
                         SubButton.Disabled = Disabled
 
                         if SubButton.TooltipTable then
@@ -3657,14 +3551,14 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                         SubButton:UpdateColors()
                     end
 
-                    function SubButton:SetVisible(Visible: boolean)
+                    function SubButton:SetVisible(Visible)
                         SubButton.Visible = Visible
 
                         SubButton.Base.Visible = SubButton.Visible
                         Groupbox:Resize()
                     end
 
-                    function SubButton:SetText(Text: string)
+                    function SubButton:SetText(Text)
                         SubButton.Text = Text
                         SubButton.Base.Text = Text
                     end
@@ -3706,7 +3600,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Library.Registry[Button.Base].BackgroundColor3 = Button.Disabled and "BackgroundColor" or "MainColor"
                 end
 
-                function Button:SetDisabled(Disabled: boolean)
+                function Button:SetDisabled(Disabled)
                     Button.Disabled = Disabled
 
                     if Button.TooltipTable then
@@ -3717,14 +3611,14 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Button:UpdateColors()
                 end
 
-                function Button:SetVisible(Visible: boolean)
+                function Button:SetVisible(Visible)
                     Button.Visible = Visible
 
                     Holder.Visible = Button.Visible
                     Groupbox:Resize()
                 end
 
-                function Button:SetText(Text: string)
+                function Button:SetText(Text)
                     Button.Text = Text
                     Button.Base.Text = Text
                 end
@@ -3889,7 +3783,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Library:SafeCallback(Toggle.Changed, Toggle.Value)
                 end
 
-                function Toggle:SetDisabled(Disabled: boolean)
+                function Toggle:SetDisabled(Disabled)
                     Toggle.Disabled = Disabled
 
                     if Toggle.TooltipTable then
@@ -3906,14 +3800,14 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Toggle:Display()
                 end
 
-                function Toggle:SetVisible(Visible: boolean)
+                function Toggle:SetVisible(Visible)
                     Toggle.Visible = Visible
 
                     Button.Visible = Toggle.Visible
                     Groupbox:Resize()
                 end
 
-                function Toggle:SetText(Text: string)
+                function Toggle:SetText(Text)
                     Toggle.Text = Text
                     Label.Text = Text
                 end
@@ -4111,7 +4005,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Library:SafeCallback(Toggle.Changed, Toggle.Value)
                 end
 
-                function Toggle:SetDisabled(Disabled: boolean)
+                function Toggle:SetDisabled(Disabled)
                     Toggle.Disabled = Disabled
 
                     if Toggle.TooltipTable then
@@ -4128,14 +4022,14 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Toggle:Display()
                 end
 
-                function Toggle:SetVisible(Visible: boolean)
+                function Toggle:SetVisible(Visible)
                     Toggle.Visible = Visible
 
                     Button.Visible = Toggle.Visible
                     Groupbox:Resize()
                 end
 
-                function Toggle:SetText(Text: string)
+                function Toggle:SetText(Text)
                     Toggle.Text = Text
                     Label.Text = Text
                 end
@@ -4282,7 +4176,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     end
                 end
 
-                function Input:SetDisabled(Disabled: boolean)
+                function Input:SetDisabled(Disabled)
                     Input.Disabled = Disabled
 
                     if Input.TooltipTable then
@@ -4294,14 +4188,14 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Input:UpdateColors()
                 end
 
-                function Input:SetVisible(Visible: boolean)
+                function Input:SetVisible(Visible)
                     Input.Visible = Visible
 
                     Holder.Visible = Input.Visible
                     Groupbox:Resize()
                 end
 
-                function Input:SetText(Text: string)
+                function Input:SetText(Text)
                     Input.Text = Text
                     Label.Text = Text
                 end
@@ -4482,7 +4376,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 function Slider:SetMax(Value)
                     assert(Value > Slider.Min, "Max value cannot be less than the current min value.")
 
-                    Slider:SetValue(math.clamp(Slider.Value, Slider.Min, Value)) --this will make  so it updates. and im calling this so i dont need to add an if :P
+                    Slider:SetValue(math.clamp(Slider.Value, Slider.Min, Value))
                     Slider.Max = Value
                     Slider:Display()
                 end
@@ -4490,7 +4384,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 function Slider:SetMin(Value)
                     assert(Value < Slider.Max, "Min value cannot be greater than the current max value.")
 
-                    Slider:SetValue(math.clamp(Slider.Value, Value, Slider.Max)) --same here. adding these comments for the funny
+                    Slider:SetValue(math.clamp(Slider.Value, Value, Slider.Max))
                     Slider.Min = Value
                     Slider:Display()
                 end
@@ -4514,7 +4408,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Library:SafeCallback(Slider.Changed, Slider.Value)
                 end
 
-                function Slider:SetDisabled(Disabled: boolean)
+                function Slider:SetDisabled(Disabled)
                     Slider.Disabled = Disabled
 
                     if Slider.TooltipTable then
@@ -4525,14 +4419,14 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Slider:UpdateColors()
                 end
 
-                function Slider:SetVisible(Visible: boolean)
+                function Slider:SetVisible(Visible)
                     Slider.Visible = Visible
 
                     Holder.Visible = Slider.Visible
                     Groupbox:Resize()
                 end
 
-                function Slider:SetText(Text: string)
+                function Slider:SetText(Text)
                     Slider.Text = Text
                     if SliderLabel then
                         SliderLabel.Text = Text
@@ -4541,17 +4435,17 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Slider:Display()
                 end
 
-                function Slider:SetPrefix(Prefix: string)
+                function Slider:SetPrefix(Prefix)
                     Slider.Prefix = Prefix
                     Slider:Display()
                 end
 
-                function Slider:SetSuffix(Suffix: string)
+                function Slider:SetSuffix(Suffix)
                     Slider.Suffix = Suffix
                     Slider:Display()
                 end
 
-                Bar.InputBegan:Connect(function(Input: InputObject)
+                Bar.InputBegan:Connect(function(Input)
                     if not IsClickInput(Input) or Slider.Disabled then
                         return
                     end
@@ -4710,7 +4604,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                         return { 0.5, Display.AbsoluteSize.Y + 1.5 }
                     end,
                     2,
-                    function(Active: boolean)
+                    function(Active)
                         Display.TextTransparency = (Active and SearchBox) and 1 or 0
                         ArrowImage.ImageTransparency = Active and 0 or 0.5
                         ArrowImage.Rotation = Active and 180 or 0
@@ -4750,9 +4644,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     if Info.Multi then
                         for _, Value in Dropdown.Values do
                             if Dropdown.Value[Value] then
-                                Str = Str
-                                    .. (Info.FormatDisplayValue and tostring(Info.FormatDisplayValue(Value)) or tostring(Value))
-                                    .. ", "
+                                Str = Str .. (Info.FormatDisplayValue and tostring(Info.FormatDisplayValue(Value)) or tostring(Value)) .. ", "
                             end
                         end
 
@@ -4779,7 +4671,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     if Info.Multi then
                         local Table = {}
 
-                        for Value, _ in Dropdown.Value do
+                        for Value,_ in Dropdown.Value do
                             table.insert(Table, Value)
                         end
 
@@ -4950,7 +4842,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Dropdown:BuildDropdownList()
                 end
 
-                function Dropdown:SetDisabled(Disabled: boolean)
+                function Dropdown:SetDisabled(Disabled)
                     Dropdown.Disabled = Disabled
 
                     if Dropdown.TooltipTable then
@@ -4962,14 +4854,14 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Dropdown:UpdateColors()
                 end
 
-                function Dropdown:SetVisible(Visible: boolean)
+                function Dropdown:SetVisible(Visible)
                     Dropdown.Visible = Visible
 
                     Holder.Visible = Dropdown.Visible
                     Groupbox:Resize()
                 end
 
-                function Dropdown:SetText(Text: string)
+                function Dropdown:SetText(Text)
                     Dropdown.Text = Text
                     Holder.Size = UDim2.new(1, 0, 0, Text and 39 or 21)
 
@@ -5254,7 +5146,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     FocusCamera()
                 end
 
-                function Viewport:SetObject(Object: Instance, Clone: boolean?)
+                function Viewport:SetObject(Object, Clone)
                     assert(Object, "Object cannot be nil.")
 
                     if Clone then
@@ -5271,7 +5163,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Groupbox:Resize()
                 end
 
-                function Viewport:SetHeight(Height: number)
+                function Viewport:SetHeight(Height)
                     assert(Height > 0, "Height must be greater than 0.")
 
                     Holder.Size = UDim2.new(1, 0, 0, Height)
@@ -5286,7 +5178,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     FocusCamera()
                 end
 
-                function Viewport:SetCamera(Camera: Instance)
+                function Viewport:SetCamera(Camera)
                     assert(
                         Camera and typeof(Camera) == "Instance" and Camera:IsA("Camera"),
                         "Camera must be a valid Camera instance."
@@ -5296,12 +5188,12 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     ViewportFrame.CurrentCamera = Camera
                 end
 
-                function Viewport:SetInteractive(Interactive: boolean)
+                function Viewport:SetInteractive(Interactive)
                     Viewport.Interactive = Interactive
                     ViewportFrame.Active = Interactive
                 end
 
-                function Viewport:SetVisible(Visible: boolean)
+                function Viewport:SetVisible(Visible)
                     Viewport.Visible = Visible
 
                     Holder.Visible = Viewport.Visible
@@ -5385,7 +5277,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 
                 local ImageLabel = New("ImageLabel", ImageProperties)
 
-                function Image:SetHeight(Height: number)
+                function Image:SetHeight(Height)
                     assert(Height > 0, "Height must be greater than 0.")
 
                     Image.Height = Height
@@ -5393,7 +5285,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Groupbox:Resize()
                 end
 
-                function Image:SetImage(NewImage: string)
+                function Image:SetImage(NewImage)
                     assert(typeof(NewImage) == "string", "Image must be a string.")
 
                     local Icon = Library:GetCustomIcon(NewImage)
@@ -5407,21 +5299,21 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Image.Image = NewImage
                 end
 
-                function Image:SetColor(Color: Color3)
+                function Image:SetColor(Color)
                     assert(typeof(Color) == "Color3", "Color must be a Color3 value.")
 
                     ImageLabel.ImageColor3 = Color
                     Image.Color = Color
                 end
 
-                function Image:SetRectOffset(RectOffset: Vector2)
+                function Image:SetRectOffset(RectOffset)
                     assert(typeof(RectOffset) == "Vector2", "RectOffset must be a Vector2 value.")
 
                     ImageLabel.ImageRectOffset = RectOffset
                     Image.RectOffset = RectOffset
                 end
 
-                function Image:SetRectSize(RectSize: Vector2)
+                function Image:SetRectSize(RectSize)
                     assert(typeof(RectSize) == "Vector2", "RectSize must be a Vector2 value.")
 
                     ImageLabel.ImageRectSize = RectSize
@@ -5438,7 +5330,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Image.ScaleType = ScaleType
                 end
 
-                function Image:SetTransparency(Transparency: number)
+                function Image:SetTransparency(Transparency)
                     assert(typeof(Transparency) == "number", "Transparency must be a number between 0 and 1.")
                     assert(Transparency >= 0 and Transparency <= 1, "Transparency must be between 0 and 1.")
 
@@ -5446,7 +5338,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Image.Transparency = Transparency
                 end
 
-                function Image:SetVisible(Visible: boolean)
+                function Image:SetVisible(Visible)
                     Image.Visible = Visible
 
                     Holder.Visible = Image.Visible
@@ -5516,7 +5408,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 
                 VideoFrameInstance.Playing = Video.Playing
 
-                function Video:SetHeight(Height: number)
+                function Video:SetHeight(Height)
                     assert(Height > 0, "Height must be greater than 0.")
 
                     Video.Height = Height
@@ -5524,28 +5416,28 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Groupbox:Resize()
                 end
 
-                function Video:SetVideo(NewVideo: string)
+                function Video:SetVideo(NewVideo)
                     assert(typeof(NewVideo) == "string", "Video must be a string.")
 
                     VideoFrameInstance.Video = NewVideo
                     Video.Video = NewVideo
                 end
 
-                function Video:SetLooped(Looped: boolean)
+                function Video:SetLooped(Looped)
                     assert(typeof(Looped) == "boolean", "Looped must be a boolean.")
 
                     VideoFrameInstance.Looped = Looped
                     Video.Looped = Looped
                 end
 
-                function Video:SetVolume(Volume: number)
+                function Video:SetVolume(Volume)
                     assert(typeof(Volume) == "number", "Volume must be a number between 0 and 10.")
 
                     VideoFrameInstance.Volume = Volume
                     Video.Volume = Volume
                 end
 
-                function Video:SetPlaying(Playing: boolean)
+                function Video:SetPlaying(Playing)
                     assert(typeof(Playing) == "boolean", "Playing must be a boolean.")
 
                     VideoFrameInstance.Playing = Playing
@@ -5562,7 +5454,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Video.Playing = false
                 end
 
-                function Video:SetVisible(Visible: boolean)
+                function Video:SetVisible(Visible)
                     Video.Visible = Visible
 
                     Holder.Visible = Video.Visible
@@ -5612,7 +5504,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 
                 Groupbox:Resize()
 
-                function Passthrough:SetHeight(Height: number)
+                function Passthrough:SetHeight(Height)
                     assert(typeof(Height) == "number" and Height > 0, "Height must be a number greater than 0.")
 
                     Passthrough.Height = Height
@@ -5620,7 +5512,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Groupbox:Resize()
                 end
 
-                function Passthrough:SetInstance(Instance: Instance)
+                function Passthrough:SetInstance(Instance)
                     assert(Instance, "Instance must be provided.")
                     assert(
                         typeof(Instance) == "Instance" and Instance:IsA("GuiBase2d"),
@@ -5635,7 +5527,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Passthrough.Instance.Parent = Holder
                 end
 
-                function Passthrough:SetVisible(Visible: boolean)
+                function Passthrough:SetVisible(Visible)
                     Passthrough.Visible = Visible
 
                     Holder.Visible = Passthrough.Visible
@@ -5875,7 +5767,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
             Library:UpdateColorsUsingRegistry()
         end
 
-        function Library:SetNotifySide(Side: string)
+        function Library:SetNotifySide(Side)
             Library.NotifySide = Side
 
             if Side:lower() == "left" then
@@ -6120,7 +6012,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 
         function Library:CreateWindow(WindowInfo)
             WindowInfo = Library:Validate(WindowInfo, Templates.Window)
-            local ViewportSize: Vector2 = workspace.CurrentCamera.ViewportSize
+            local ViewportSize = workspace.CurrentCamera.ViewportSize
 
             local MaxX = ViewportSize.X - 64
             local MaxY = ViewportSize.Y - 64
@@ -6219,7 +6111,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     MainFrame.Position = UDim2.new(0.5, -MainFrame.Size.X.Offset / 2, 0.5, -MainFrame.Size.Y.Offset / 2)
                 end
 
-                --// Top Bar \\-
                 local TopBar = New("Frame", {
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 48),
@@ -6227,7 +6118,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 })
                 Library:MakeDraggable(MainFrame, TopBar, false, true)
 
-                --// Title
                 TitleHolder = New("Frame", {
                     BackgroundTransparency = 1,
                     Size = UDim2.new(0, InitialLeftWidth, 1, 0),
@@ -6274,7 +6164,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Parent = TitleHolder,
                 })
 
-                --// Top Right Bar
                 RightWrapper = New("Frame", {
                     AnchorPoint = Vector2.new(1, 0.5),
                     BackgroundTransparency = 1,
@@ -6396,7 +6285,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     })
                 end
 
-                --// Bottom Bar \\--
                 Library:MakeLine(MainFrame, {
                     AnchorPoint = Vector2.new(0, 1),
                     Position = UDim2.new(0, 0, 1, -20),
@@ -6410,7 +6298,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Size = UDim2.new(1, 0, 0, 20),
                     Parent = MainFrame,
                 })
-                --// Footer
+
                 New("TextLabel", {
                     BackgroundTransparency = 1,
                     Size = UDim2.fromScale(1, 1),
@@ -6420,7 +6308,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Parent = BottomBar,
                 })
 
-                --// Resize Button
                 if WindowInfo.Resizable then
                     ResizeButton = New("TextButton", {
                         AnchorPoint = Vector2.new(1, 0),
@@ -6450,7 +6337,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Parent = ResizeButton,
                 })
 
-                --// Tabs \\--
                 Tabs = New("ScrollingFrame", {
                     AutomaticCanvasSize = Enum.AutomaticSize.Y,
                     BackgroundColor3 = "BackgroundColor",
@@ -6464,7 +6350,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Parent = Tabs,
                 })
 
-                --// Container \\--
                 Container = New("Frame", {
                     AnchorPoint = Vector2.new(1, 0),
                     BackgroundColor3 = function()
@@ -6484,7 +6369,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 })
             end
 
-            --// Window Table \\--
             local Window = {}
 
             function Window:ChangeTitle(title)
@@ -6583,7 +6467,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                         Icon = TabIcon,
                     })
 
-                    --// Tab Container \\--
                     TabContainer = New("Frame", {
                         BackgroundTransparency = 1,
                         Size = UDim2.fromScale(1, 1),
@@ -6660,7 +6543,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     end
                 end
 
-                --// Warning Box \\--
                 local WarningBoxHolder = New("Frame", {
                     AutomaticSize = Enum.AutomaticSize.Y,
                     BackgroundTransparency = 1,
@@ -6744,7 +6626,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     })
                 end
 
-                --// Tab Table \\--
                 local Tab = {
                     Groupboxes = {},
                     Tabboxes = {},
@@ -6842,7 +6723,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     end
                 end
 
-                function Tab:Resize(ResizeWarningBox: boolean?)
+                function Tab:Resize(ResizeWarningBox)
                     if ResizeWarningBox then
                         local MaximumSize = math.floor(TabContainer.AbsoluteSize.Y / 3.25)
                         local _, YText = Library:GetTextBounds(
@@ -7114,7 +6995,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                             TabboxHolder.Size = UDim2.new(1, 0, 0, (List.AbsoluteContentSize.Y / Library.DPIScale) + 49)
                         end
 
-                        --// Execution \\--
                         if not Tabbox.ActiveTab then
                             Tab:Show()
                         end
@@ -7210,7 +7090,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Library.ActiveTab = nil
                 end
 
-                --// Execution \\--
                 if not Library.ActiveTab then
                     Tab:Show()
                 end
@@ -7300,7 +7179,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                         Icon = TabIcon,
                     })
 
-                    --// Tab Container \\--
                     TabContainer = New("ScrollingFrame", {
                         AutomaticCanvasSize = Enum.AutomaticSize.Y,
                         BackgroundTransparency = 1,
@@ -7323,7 +7201,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     })
                 end
 
-                --// Tab Table \\--
                 local Tab = {
                     Elements = {},
                     IsKeyTab = true,
@@ -7447,7 +7324,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     Library.ActiveTab = nil
                 end
 
-                --// Execution \\--
                 if not Library.ActiveTab then
                     Tab:Show()
                 end
@@ -7467,7 +7343,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 return Tab
             end
 
-            function Library:Toggle(Value: boolean?)
+            function Library:Toggle(Value)
                 if typeof(Value) == "boolean" then
                     Library.Toggled = Value
                 else
@@ -7522,12 +7398,11 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 end
             end
 
-            --// Execution \\--
             SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
                 Library:UpdateSearch(SearchBox.Text)
             end)
 
-            Library:GiveSignal(UserInputService.InputBegan:Connect(function(Input: InputObject)
+            Library:GiveSignal(UserInputService.InputBegan:Connect(function(Input)
                 if Library.Unloaded then
                     return
                 end
@@ -7662,7 +7537,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 self.Library = library
             end
 
-            --// Folders \\--
             function ThemeManager:GetPaths()
                 local Paths = {}
 
@@ -7697,7 +7571,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 task.wait(0.1)
             end
 
-            --// Apply, Update theme \\--
             function ThemeManager:ApplyTheme(theme)
                 local customThemeData = self:GetCustomTheme(theme)
                 local Data = customThemeData or self.BuiltInThemes[theme]
@@ -7738,7 +7611,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 self.Library:UpdateColorsUsingRegistry()
             end
 
-            --// Get, Load, Save, Delete, Refresh \\--
             function ThemeManager:GetCustomTheme(File)
                 local Path = self.Folder .. "/Themes/" .. File .. ".json"
                 return FileManager:Exists(Path) and FileManager:ReadJSON(Path) or nil
@@ -7869,7 +7741,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 return Out
             end
 
-            --// GUI \\--
             function ThemeManager:CreateThemeManager(Groupbox)
                 Groupbox:AddLabel("Background color"):AddColorPicker("BackgroundColor", { Default = self.Library.Scheme.BackgroundColor })
                 Groupbox:AddLabel("Main color"):AddColorPicker("MainColor", { Default = self.Library.Scheme.MainColor })
@@ -8094,12 +7965,11 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 
             function SaveManager:IgnoreThemeSettings()
                 self:SetIgnoreIndexes({
-                    "BackgroundColor", "MainColor", "AccentColor", "OutlineColor", "FontColor", "FontFace", -- themes
-                    "ThemeManager_ThemeList", "ThemeManager_CustomThemeList", "ThemeManager_CustomThemeName", -- themes
+                    "BackgroundColor", "MainColor", "AccentColor", "OutlineColor", "FontColor", "FontFace",
+                    "ThemeManager_ThemeList", "ThemeManager_CustomThemeList", "ThemeManager_CustomThemeName",
                 })
             end
 
-            --// Folders \\--
             function SaveManager:GetPaths()
                 local Paths = {}
 
@@ -8141,7 +8011,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 end
             end
 
-            --// Save, Load, Delete, Refresh \\--
             function SaveManager:Save(Name)
                 if not Name then
                     return false, "no config File is selected"
@@ -8183,7 +8052,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     if not Option.Type or not self.Parser[Option.Type] or self.Ignore[Option.Index] then
                         continue
                     end
-                    task.spawn(self.Parser[Option.Type].Load, Option.Index, Option) -- task.spawn() so the config loading wont get stuck.
+                    task.spawn(self.Parser[Option.Type].Load, Option.Index, Option)
                 end
 
                 return true
@@ -8243,7 +8112,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 return Data
             end
 
-            --// Auto Load \\--
             function SaveManager:GetAutoloadConfig()
                 SaveManager:CheckFolderTree()
 
@@ -8283,7 +8151,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                 return true, ""
             end
 
-            --// GUI \\--
             function SaveManager:BuildConfigSection(tab)
                 assert(self.Library, "Must set SaveManager.Library")
 
@@ -8391,7 +8258,6 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 		["isrenderobj"] = FunctionManager.Validate({"isrenderobj", "is_renderobj", "isrender_obj", "is_render_obj"}, "isrenderobj", function()
             return true
         end),
-        ["httprequest"] = FunctionManager.Validate({"httprequest", "http_request", "request", "HttpPost", "Http_Post"}, "httprequest", nil),
 
         ["newcclosure"] = FunctionManager.Validate({"newcclosure", "new_cclosure", "newc_closure", "new_c_closure"}, "newcclosure", function(LClosure)
 			return LClosure
