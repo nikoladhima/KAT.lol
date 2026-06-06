@@ -1,6 +1,3 @@
---!optimize 2
---!native
-
 local NikoletoScripts = (...)
 if type(NikoletoScripts) ~= "table" then
     error("[KAT.lol/src/Main.luau | ERROR]: Argument must be a table.", 2)
@@ -124,8 +121,8 @@ local FixedBottomCenter = Vector2.zero
 local ChinaHatCFrameOffset = CFrame.new(0, 1.1, 0)
 
 local Aimbot = {
-	["Toggled"] = false,
-	["Enabled"] = false,
+	Scale = false,
+	Enabled = false,
 
 	["Target"] = nil,
 	["AimPart"] = "Root",
@@ -133,7 +130,7 @@ local Aimbot = {
 	["StickyAim"] = true,
 
 	["FOVCircle"] = {
-		["Enabled"] = false,
+		Enabled = false,
 		["Filled"] = false,
 		["Transparency"] = 1,
 		["Thickness"] = 1,
@@ -155,13 +152,13 @@ local Aimbot = {
 }
 
 local SilentAimbot = {
-	["Toggled"] = false,
-	["Enabled"] = false,
+	Scale = false,
+	Enabled = false,
 
 	["AimPart"] = "Root",
 
 	["FOVCircle"] = {
-		["Enabled"] = false,
+		Enabled = false,
 		["Filled"] = false,
 		["Transparency"] = 1,
 		["Thickness"] = 1,
@@ -177,8 +174,8 @@ local SilentAimbot = {
 }
 
 local TriggerBot = {
-	["Toggled"] = false,
-	["Enabled"] = false,
+	Scale = false,
+	Enabled = false,
 
 	["Target"] = nil,
 
@@ -216,7 +213,7 @@ local RageBot = {
 	["LastAttackTime"] = 0,
 	["IsAttacking"] = false,
 
-	["Toggled"] = false,
+	Scale = false,
 	["Weapon"] = "Knife",
 	["AimPart"] = "Head",
 	["MultiTarget"] = true,
@@ -233,10 +230,10 @@ local RageBotTargets = {}
 local RageBotArguments = {["zSign"] = 1}
 
 local HitConfiguration = {
-	["Toggled"] = false,
+	Scale = false,
 
 	["Marker"] = {
-		["Enabled"] = false,
+		Enabled = false,
 		["Color"] = Color3.fromRGB(255, 255, 255),
 		["Lifetime"] = 1,
 		["Scale"] = 1,
@@ -247,14 +244,14 @@ local HitConfiguration = {
 	},
 
 	["Log"] = {
-		["Enabled"] = false,
+		Enabled = false,
 		["Color"] = Color3.fromRGB(255, 255, 255),
 		["UseColor"] = false,
 		["Duration"] = 1,
 	},
 
 	["Sound"] = {
-		["Enabled"] = false,
+		Enabled = false,
 		["Selected"] = "Osu",
 		["Volume"] = 5
 	},
@@ -286,14 +283,14 @@ local HitSounds = {
 }
 
 local AntiAim = {
-	["Toggled"] = false,
-	["Enabled"] = false,
+	Scale = false,
+	Enabled = false,
 	["Mode"] = "None",
 	["SpinBot"] = 1
 }
 
 local LocalHighlight = {
-	["Enabled"] = false,
+	Enabled = false,
 	["Color"] = Color3.fromRGB(255, 255, 255),
 	["Transparency"] = 0
 }
@@ -322,7 +319,7 @@ local ESPWallCheck = false
 local ESPTeamCheck = false
 
 local ChamESP = {
-	["Enabled"] = false,
+	Enabled = false,
 	["FillColor"] = Color3.fromRGB(255, 255, 255),
 	["OutlineColor"] = Color3.fromRGB(255, 255, 255),
 	["FillTransparency"] = 0.5,
@@ -330,14 +327,14 @@ local ChamESP = {
 }
 
 local HeadTagESP, TagBuffer = {
-	["Enabled"] = false,
+	Enabled = false,
 	["Color"] = Color3.fromRGB(255, 255, 255),
 	["Transparency"] = 1,
 	["Position"] = "Top"
 }, table.create(7)
 
 local TracerESP = {
-	["Enabled"] = false,
+	Enabled = false,
 	["Color"] = Color3.fromRGB(255, 255, 255),
 	["Type"] = "Locked",
 	["Part"] = "Root",
@@ -346,13 +343,13 @@ local TracerESP = {
 
 local BoxESP, BoxPointScreen, BoxPointOnScreen, Box3DOffsets, Box3DEdges = {
 	["Box2D"] = {
-		["Enabled"] = false,
+		Enabled = false,
 		["Color"] = Color3.fromRGB(255, 255, 255),
 		["Filled"] = false,
 		["Transparency"] = 1
 	},
 	["Box3D"] = {
-		["Enabled"] = false,
+		Enabled = false,
 		["Color"] = Color3.fromRGB(255, 255, 255),
 		["Transparency"] = 1
 	}
@@ -368,7 +365,7 @@ local BoxESP, BoxPointScreen, BoxPointOnScreen, Box3DOffsets, Box3DEdges = {
 }
 
 local SkeletonESP = {
-	["Enabled"] = false,    
+	Enabled = false,    
 	["Color"] = Color3.fromRGB(255, 255, 255),
 	["Thickness"] = 1,
 	["Transparency"] = 1
@@ -481,10 +478,6 @@ local function IsDead(Character, Cache)
 end
 
 local function CanHit(TargetPosition, Character)
-	if not RageBot.WallCheck then
-		return true
-	end
-
 	if not LocalHead then
 		return false
 	end
@@ -2132,10 +2125,8 @@ task.spawn(function()
 					AimPartPosition = AimPart.Position
 				end
 
-				if WallCheck then
-					if not CanHit (AimPartPosition, Character) then
-						continue
-					end
+				if WallCheck and not CanHit(AimPartPosition, Character) then
+					continue
 				end
 
 				local Screen, OnScreen = WorldToScreenPoint(AimPartPosition)
@@ -2643,7 +2634,7 @@ if getsenv and GetGunState then
 							continue
 						end
 
-						if not CanHit(AimPartPosition, Character) then
+						if RageBot.WallCheck and not CanHit(AimPartPosition, Character) then
 							continue
 						end
 
@@ -2713,7 +2704,7 @@ if getsenv and GetGunState then
 														local Health = Cache.Humanoid
 														Health = Health and Health.Health
 														if Health and Health > 0 then
-															if CanHit(AimPart.Position, Character) then
+															if (RageBot.WallCheck and CanHit(AimPart.Position, Character)) or true then
 																RageBot.TargetCache = Cache
 																RageBot.TargetPart = AimPart
 
@@ -2735,9 +2726,9 @@ if getsenv and GetGunState then
 												if Character then
 													local Health = Cache.Humanoid
 													Health = Health and Health.Health
-													if Health and Health > 0 and CanHit(
+													if Health and Health > 0 and ((RageBot.WallCheck and CanHit(
 														RageBot.TargetPart.Position, Character
-													) then
+													)) or true) then
 														RegisterPendingHit(Cache, Cache.Player, Health)
 														ScriptEnvironment.inputDown()
 														task.wait()
@@ -3238,30 +3229,6 @@ if Click then
 else
 	TriggerBotMain:AddLabel("TriggerBot is not supported, missing functions 'mouse1press' & 'mouse1release'", true)
 end
-
-MovementTab:AddToggle("Speed", {
-	Text = "Fast Walk [UNSAFE]",
-	Default = false,
-	Risky = true,
-	Callback = function(Value)
-		if not Value then
-			ConnectionManager:Disconnect("Speed")
-			return
-		end
-
-		ConnectionManager:Connect("Speed", RunService.Heartbeat(function()
-			if not LocalHumanoid or not LocalRoot then
-				return
-			end
-
-			local MoveDirection = LocalHumanoid.MoveDirection
-			if MoveDirection.Magnitude > 0 then
-				LocalRoot.CFrame += MoveDirection * 0.04
-			end
-		end))
-	end
-})
-
 MovementTab:AddToggle("InfiniteJump", {
 	Text = "Infinite Jump [UNSAFE]",
 	Default = false,
@@ -3281,13 +3248,38 @@ MovementTab:AddToggle("InfiniteJump", {
 	end
 })
 
-MovementTab:AddToggle("NoclipMovement", {
-	Text = "Noclip [UNSAFE]",
+MovementTab:AddToggle("Speed", {
+	Text = "Fast Walk",
 	Default = false,
-	Risky = true,
+	Callback = function(Value)
+		if not Value then
+			ConnectionManager:Disconnect("Speed")
+			return
+		end
+
+		ConnectionManager:Connect("Speed", RunService.Heartbeat(function()
+			if not LocalHumanoid or not LocalRoot then
+				return
+			end
+
+			local MoveDirection = LocalHumanoid.MoveDirection
+			if MoveDirection.Magnitude > 0 then
+				LocalRoot.CFrame += MoveDirection * 0.039
+			end
+		end))
+	end
+})
+
+
+MovementTab:AddToggle("NoclipMovement", {
+	Text = "Noclip",
+	Default = false,
 	Callback = function(Value)
 		if not Value then
 			ConnectionManager:Disconnect("Noclip")
+			for _,Descendant in LocalCharacter:QueryDescendants("BasePart") do
+				Descendant.CanCollide = true
+			end
 			return
 		end
 
@@ -3303,9 +3295,8 @@ MovementTab:AddToggle("NoclipMovement", {
 	end
 })
 MovementTab:AddToggle("JumpMultiplier", {
-	Text = "Jump Muliplier [UNSAFE]",
+	Text = "Jump Muliplier",
 	Default = false,
-	Risky = true,
 	Callback = function(Value)
 		if not Value then
 			ConnectionManager:Disconnect("JumpMultiplier")
@@ -3317,7 +3308,7 @@ MovementTab:AddToggle("JumpMultiplier", {
 		end
 
 		local Slider = Options["JumpMultiplierSlider"]
-		ConnectionManager:Connect("JumpMuliplier", RunService.Heartbeat(function()
+		ConnectionManager:Connect("JumpMultiplier", RunService.Heartbeat(function()
 			if not LocalHumanoid then
 				return
 			end
@@ -3343,9 +3334,8 @@ MovementTab:AddSlider("JumpMultiplierSlider", {
 AntiAimTab:AddLabel("CFrame & SpinBot doesn't work in First Person View or Shiftlock.", true)
 local AntiAimStatusLabel = AntiAimTab:AddLabel("Status: Disabled")
 AntiAimTab:AddToggle("AntiAimToggle", {
-	Text = "Toggle AntiAim [UNSAFE]",
+	Text = "Toggle AntiAim",
 	Default = AntiAim.Toggled,
-	Risky = true,
 	Callback = function(Value)
 		AntiAim.Toggled = Value
 		if not Value and AntiAim.Enabled then
@@ -3357,7 +3347,6 @@ AntiAimTab:AddToggle("AntiAimToggle", {
 }):AddKeyPicker("VelocityKey", {
 	Mode = "Toggle",
 	Text = "Enable AntiAim",
-	Risky = true,
 	Callback = function(Value)
 		if not AntiAim.Toggled then
 			return
@@ -3436,9 +3425,8 @@ AntiAimTab:AddDropdown("CFrameMode", {
 	end
 })
 AntiAimTab:AddToggle("SpinBot", {
-	Text = "SpinBot [UNSAFE]",
+	Text = "SpinBot",
 	Default = false,
-	Risky = true,
 	Callback = function(Value)
 		if not Value then
 			ConnectionManager:Disconnect("SpinBot")
@@ -4288,6 +4276,11 @@ else
 	WeaponsTab:AddLabel("No Recoil is not supported, missing function 'getgc'", true)
 end
 
+SettingsTab:AddToggle("DisableDiscordNotification", {
+	Text = "Disable Discord Invite Notifications",
+	Default = false
+})
+
 SettingsTab:AddToggle("ns__Watermark", {
 	Text = "Library Watermark",
 	Default = true,
@@ -4373,7 +4366,7 @@ local function Unload()
 		ChinaHat.ChinaHatTrail = nil
 	end
 
-	if not cleardrawcache then
+	local function Clear()
 		for _,FOVCircle in next, AimbotFOVCircles do
 			DrawingManager:Remove(FOVCircle)
 		end
@@ -4387,8 +4380,11 @@ local function Unload()
 		end
 
 		table.clear(ESPObjects)
-	else
-		pcall(cleardrawcache)
+		return true
+	end
+
+	if not pcall(cleardrawcache or Clear) then
+		Clear()
 	end
 end
 
@@ -4417,7 +4413,7 @@ UI:Notify({
 UI:Toggle(true)
 
 if FileManager then
-	FileManager = FileManager(ExecutorFunctions["httprequest"])
+	FileManager = FileManager()
 end
 
 local Errors = 0
@@ -4454,3 +4450,13 @@ print("[KAT.lol/src/Main.luau | INFO]: Successfully loaded KAT.lol in", tick() -
 if Errors > 0 then
 	warn("[nikoletoscripts/KAT.lol]:", Errors, "Module Errors were found. Script will continue to function.")
 end
+
+ThreadManager:Start("DiscordNotifier", function()
+	if not Toggles["DisableDiscordNotification"].Value then
+		UI:Notify({
+			Title = "[[ KAT.lol ]]",
+			Description = "Friendly reminder to join the Discord Server for updates! [discord.gg/DwRT2nH93D]\nYou can disable this notification in Settings.",
+			Time = 25
+		})
+	end
+end, 60)
