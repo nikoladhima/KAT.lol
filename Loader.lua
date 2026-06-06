@@ -34,7 +34,7 @@ end
 
 local Result = LoadScript("src/Init.luau", "Loader.lua", {
 	["Start"] = tick(),
-	["Version"] = "1.0.3",
+	["Version"] = "1.0.4",
 	["LoadScript"] = LoadScript
 })
 
