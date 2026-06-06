@@ -662,7 +662,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 
             --// Library \\--
             Window = {
-                Title = "combat.cc",
+                Title = "KAT.LOL",
                 Footer = "Version: v" .. Context["Version"],
                 Position = UDim2.fromOffset(6, 6),
                 Size = UDim2.fromOffset(1000, 520),
