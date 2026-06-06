@@ -378,10 +378,6 @@ local World = {
 	["OldExposureCompensation"] = Lighting.ExposureCompensation,
 	["OldAmbient"] = Lighting.Ambient,
 	["OldOutdoorAmbient"] = Lighting.OutdoorAmbient,
-	["FogAmount"] = Lighting.FogStart,
-	["OldFogColor"] = Lighting.FogColor,
-	["OldCameraMaxZoom"] = LocalPlayer.CameraMaxZoomDistance,
-	["OldCameraMinZoom"] = LocalPlayer.CameraMinZoomDistance,
 	["OldCameraFOV"] = nil
 }
 
@@ -1514,7 +1510,7 @@ local function TriggerHitFunctions(PreviousHealth, Health, WorldPosition, Target
 			local Description
 			if Log.UseColor then
 				local Color = Log.Color
-				Description = FullName .. "has been hit for " .. string.format(
+				Description = FullName .. " has been hit for " .. string.format(
 					'<font color="%s">%s</font>', string.format("#%02X%02X%02X", Color.R * 255, Color.G * 255, Color.B * 255), HealthHit
 				) .. " health"
 			else
@@ -1599,7 +1595,7 @@ local function TriggerHitFunctions(PreviousHealth, Health, WorldPosition, Target
 			local Screen, OnScreen = WorldToViewportPoint(WorldPosition)
 
 			local MarkerID = GenerateGUID(false)
-			ConnectionManager:Connect("HitMarker", RunService.RenderStepped(function()
+			ConnectionManager:Connect(MarkerID, RunService.RenderStepped(function()
 				local ElapsedTime = tick() - StartTime
 				if ElapsedTime >= Lifetime then
 					for _,Line in ipairs(Lines) do
@@ -4036,44 +4032,6 @@ LightingTab:AddButton({
 	end
 })
 
-LightingTab:AddToggle("FogModification", {
-	Text = "Fog Modification",
-	Default = false,
-	Callback = function(Value)
-		if not Value then
-			ConnectionManager:Disconnect("FogModification")
-			Lighting.FogStart = 6e9
-			Lighting.FogEnd = 6e9
-			return
-		end
-
-		ConnectionManager:Connect("FogModification", RunService.RenderStepped(function()
-			Lighting.FogStart = 0
-			Lighting.FogEnd = World.FogAmount
-		end))
-	end
-})
-local LightingDependencyBox = LightingTab:AddDependencyBox()
-LightingDependencyBox:SetupDependencies({{Toggles["FogModification"], true}})
-LightingDependencyBox:AddSlider("LightingFogEnd", {
-	Text = "Fog Amount (Studs)",
-	Default = 1250,
-	Min = 1,
-	Max = 5000,
-	Rounding = 0,
-	Compact = false,
-	Callback = function(Value)
-		World.FogAmount = Value
-	end
-})
-LightingDependencyBox:AddLabel("Fog color"):AddColorPicker("FogColorPicker", {
-	Default = World.OldFogColor,
-	Transparency = nil,
-	Callback = function(Color)
-		Lighting.FogColor = Color
-	end
-})
-
 WeaponsViewTab:AddToggle("FOVModification", {
 	Text = "FOV Modification",
 	Default = false,
@@ -4091,7 +4049,7 @@ WeaponsViewTab:AddToggle("FOVModification", {
 		end
 
 		ConnectionManager:Connect("FOVModification", RunService.RenderStepped(function()
-			local Toggle = Camera and Toggles["FOVModificationToggle"]
+			local Toggle = Camera and Toggles["FOVModification"]
 			if not Toggle then
 				return
 			end
@@ -4111,32 +4069,6 @@ WeaponsViewDependencyBox:AddSlider("FOVAmountSlider", {
 	Max = 120,
 	Rounding = 0,
 	Compact = false
-})
-WeaponsViewDependencyBox:AddToggle("MaxZoomModificationToggle", {
-	Text = "Max Zoom Modification",
-	Default = false,
-	Callback = function(Value)
-		if not Value then
-			LocalPlayer.CameraMaxZoomDistance = World.OldCameraMaxZoom
-			LocalPlayer.CameraMinZoomDistance = World.OldCameraMinZoom
-			return
-		end
-
-		LocalPlayer.CameraMaxZoomDistance = Options["MaxZoomSlider"].Value
-	end
-})
-WeaponsViewDependencyBox:AddSlider("MaxZoomSlider", {
-	Text = "Max Zoom (Studs)",
-	Default = 200,
-	Min = 30,
-	Max = 1000,
-	Rounding = 0,
-	Compact = false,
-	Callback = function(Value)
-		if Options["MaxZoomModificationToggle"].Value then
-			LocalPlayer.CameraMaxZoomDistance = Value
-		end
-	end
 })
 WeaponsViewTab:AddToggle("NoclipCamera", {
 	Text = "Noclip Camera",
@@ -4332,7 +4264,7 @@ if getgc then
 			if CameraRecoilFunction then
 				Found = true
 				rawset(Table, "CameraRecoil", function(Argument1, Argument2, ...)
-					if Running and (NoRecoil or RageBot.Toggled) then
+					if Running and NoRecoil then
 						return CameraRecoilFunction(Argument1, 0, ...)
 					end
 					return CameraRecoilFunction(Argument1, Argument2, ...)
@@ -4423,10 +4355,6 @@ local function Unload()
 	Lighting.ExposureCompensation = World.OldExposureCompensation
 	Lighting.Ambient = World.OldAmbient
 	Lighting.OutdoorAmbient = World.OldOutdoorAmbient
-	Lighting.FogStart = 6e9
-	Lighting.FogEnd = 6e9
-	LocalPlayer.CameraMaxZoomDistance = World.OldCameraMaxZoom
-	LocalPlayer.CameraMinZoomDistance = World.OldCameraMinZoom
 
 	if Camera and World.OldCameraFOV then
 		Camera.FieldOfView = World.OldCameraFOV
