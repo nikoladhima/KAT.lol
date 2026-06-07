@@ -1,4 +1,3 @@
-print('test')
 local NikoletoScripts = (...)
 if type(NikoletoScripts) ~= "table" then
     error("[KAT.lol/src/Main.luau | ERROR]: Argument must be a table.", 2)
