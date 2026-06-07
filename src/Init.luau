@@ -1,3 +1,5 @@
+print('start init')
+
 local Context = (...)
 if type(Context) ~= "table" then
     error("[KAT.lol/src/Init.luau | ERROR]: Argument must be a table.", 2)
@@ -42,6 +44,8 @@ local ConnectionManager = (function()
 	return ConnectionManager
 end)()
 
+print('cpmmectoon amnager')
+
 local ServiceManager = setmetatable({}, {
     __index = function(self, Name)
         local Service = game:GetService(Name)
@@ -53,6 +57,8 @@ local ServiceManager = setmetatable({}, {
         return self.Players.LocalPlayer
     end
 })
+
+print('service amnager')
 
 local FileManager = (function()
 	if not (isfolder and makefolder and isfile and writefile and readfile and delfile and listfiles) then
@@ -123,6 +129,8 @@ local FileManager = (function()
     })
 end)()
 
+print('FileManager')
+
 local RunService = (function()
 	local RunService, Service = {}, ServiceManager.RunService
 
@@ -146,6 +154,8 @@ local RunService = (function()
 
 	return RunService
 end)()
+
+print('RunService manager')
 
 local Utils = (function()
 	local Utils = {}
@@ -236,7 +246,9 @@ local Utils = (function()
 	return Utils
 end)()
 
-Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
+print('utils manager')
+
+Context.LoadScript("src/Main.luau", "src/Init.luau", {
 	["Start"] = Context["Start"],
 	["Version"] = Context["Version"],
 	["LoadScript"] = Context["LoadScript"],
@@ -419,7 +431,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
                     return true, nil
                 end
 
-                FileManager:WriteFile(AssetData.Path, game:HttpGet(AssetData.URL))
+                FileManager:Write(AssetData.Path, game:HttpGet(AssetData.URL))
             end
 
             for AssetName,_ in CustomImageManagerAssets do
@@ -8068,7 +8080,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 
             function SaveManager:SaveAutoloadConfig(Name)
                 SaveManager:CheckFolderTree()
-                FileManager:WriteFile(self.Folder .. "/Settings/autoload.txt", Name)
+                FileManager:Write(self.Folder .. "/Settings/autoload.txt", Name)
                 return true, ""
             end
 
