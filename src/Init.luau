@@ -3,24 +3,18 @@ if type(Context) ~= "table" then
     error("[KAT.lol/src/Init.luau | ERROR]: Argument must be a table.", 2)
 end
 
-local Environment = (function()
-	if not getgenv or typeof(getgenv) ~= "function" then
-		error("[KAT.lol/src/Init.luau | ERROR]: Global Environment is missing.", 2)
-	end
+local function IsFunction(Function)
+    return typeof(Function) == "function" and Function
+end
 
-	local Success, Environment = pcall(getgenv)
-	if not Success or not Environment then
-		error("[KAT.lol/src/Init.luau | ERROR]: Global Environment was not passed.", 2)
-	end
-
-	return Environment
-end)()
-print("[KAT.lol/src/Init.luau | INFO]: Successfully fetched the Global Environment.")
+local Environment = IsFunction(getgenv)
+if not Environment then
+    game:GetService("Players").LocalPlayer:Kick("Exploit not supported.\nReason: Global Environment is missing.")
+end
 
 if not Drawing then
-	error("[KAT.lol/src/Init.luau | ERROR] Drawing Environment is missing.", 2)
+	game:GetService("Players").LocalPlayer:Kick("Exploit not supported.\nReason: Drawing Library is missing.")
 end
-print("[KAT.lol/src/Init.luau | INFO]: Successfully fetched the Drawing Environment.")
 
 local ConnectionManager = (function()
 	local ConnectionManager = {Connections = {}}
@@ -52,52 +46,6 @@ local ConnectionManager = (function()
 	return ConnectionManager
 end)()
 
-local FunctionManager = (function()
-    if not Environment.ns__FunctionManagerCache then
-        Environment.ns__FunctionManagerCache = {}
-    end
-
-    local FunctionManager = {}
-
-    local function GetFunction(FunctionName)
-        local Function = Environment[FunctionName]
-        if type(Function) == "function" then
-            return Function
-        end
-    end
-
-    function FunctionManager.Validate(Name, UNCName, Fallback)
-        local Cache = Environment.ns__FunctionManagerCache
-
-        if UNCName and Cache[UNCName] then
-            return Cache[UNCName]
-        end
-
-        local Function
-
-        if type(Name) == "table" then
-            for _,FunctionName in ipairs(Name) do
-                Function = GetFunction(FunctionName)
-                if Function then
-                    break
-                end
-            end
-        else
-            Function = GetFunction(Name)
-        end
-
-        Function = Function or Fallback
-
-        if UNCName and type(Function) == "function" then
-            Cache[UNCName] = Function
-        end
-
-        return Function
-    end
-
-    return FunctionManager
-end)()
-
 local ServiceManager = setmetatable({}, {
     __index = function(self, Name)
         local Service = game:GetService(Name)
@@ -111,78 +59,63 @@ local ServiceManager = setmetatable({}, {
 })
 
 local FileManager = (function()
-	local IsFolder = FunctionManager.Validate({"isfolder", "is_folder"}, "isfolder", nil)
-	local MakeFolder = FunctionManager.Validate({"makefolder", "make_folder", "createfolder", "create_folder"}, "makefolder", nil)
-	local DeleteFolder = FunctionManager.Validate({"delfolder", "del_folder", "deletefolder", "delete_folder"}, "delfolder", nil)
-	local IsFile = FunctionManager.Validate({"isfile", "is_file"}, "isfile", nil)
-	local WriteFile = FunctionManager.Validate({"writefile", "write_file", "writefileasync", "writefile_async", "write_file_async"}, "writefile", nil)
-	local ReadFile = FunctionManager.Validate({"readfile", "read_file", "readfileasync", "readfile_async", "read_file_async"}, "readfile", nil)
-	local DeleteFile = FunctionManager.Validate({"delfile", "del_file", "deletefile", "delete_file"}, "delfile", nil)
-	local ListFiles = FunctionManager.Validate({"listfiles", "list_files"}, "listfiles", nil)
-
-	if not (IsFolder and MakeFolder and DeleteFolder and IsFile and WriteFile and ReadFile and DeleteFile and ListFiles) then
+	if not (isfolder and makefolder and isfile and writefile and readfile and deletefile and listfiles) then
 		warn("[FileManager]: Failed to load, Configuration & Theme System will not be initialized.")
 		return nil
 	end
 
-    local HttpService = ServiceManager["HttpService"]
+    local HttpService = ServiceManager.HttpService
 	local FileManager = {}
 
 	function FileManager:IsFile(Path)
-        return IsFile(Path)
+        return isfile(Path)
 	end
 
 	function FileManager:IsFolder(Path)
-		return IsFolder(Path)
+		return isfolder(Path)
 	end
 
 	function FileManager:CreateFolder(Path)
-		if not IsFolder(Path) then
-			MakeFolder(Path)
-		end
-	end
-
-	function FileManager:DeleteFolder(Path)
-		if IsFolder(Path) then
-			DeleteFolder(Path)
+		if not isfolder(Path) then
+			makefolder(Path)
 		end
 	end
 
 	function FileManager:DeleteFile(Path)
-		if IsFile(Path) then
-			DeleteFile(Path)
+		if isfile(Path) then
+			deletefile(Path)
 		end
 	end
 
 	function FileManager:Read(Path)
-		if IsFile(Path) then
-			return ReadFile(Path)
+		if isfile(Path) then
+			return readfile(Path)
 		end
 		return nil
 	end
 
 	function FileManager:ReadJSON(Path)
-		if IsFile(Path) then
-            local Content = ReadFile(Path)
-			return Content and HttpService:JSONDecode(Content) or ""
+		if isfile(Path) then
+            local Content = readfile(Path)
+			return Content and HttpService:JSONDecode(Content)
 		end
 		return nil
 	end
 
 	function FileManager:Write(Path, Content)
-		WriteFile(Path, Content)
+		writefile(Path, Content)
 	end
 
 	function FileManager:WriteJSON(Path, Content)
-		WriteFile(Path, HttpService:JSONEncode(Content))
+		writefile(Path, HttpService:JSONEncode(Content))
 	end
 
 	function FileManager:List(Path)
-		return ListFiles(Path) or {}
+		return listfiles(Path) or {}
 	end
 
 	function FileManager:Exists(Path)
-		return IsFile(Path) or IsFolder(Path)
+		return isfile(Path) or isfolder(Path)
 	end
 
 	return setmetatable(FileManager, {
@@ -195,7 +128,7 @@ local FileManager = (function()
 end)()
 
 local RunService = (function()
-	local RunService, Service = {}, ServiceManager["RunService"]
+	local RunService, Service = {}, ServiceManager.RunService
 
 	function RunService:BindToRenderStep(Name, Priority, Function)
 		return Service:BindToRenderStep(Name, Priority, Function)
@@ -221,8 +154,9 @@ end)()
 local Utils = (function()
 	local Utils = {}
 
+    local HttpService = ServiceManager.HttpService
 	function Utils.GenerateGUID(WrapInCurlyBraces)
-		return ServiceManager["HttpService"]:GenerateGUID(WrapInCurlyBraces)
+		return HttpService:GenerateGUID(WrapInCurlyBraces)
 	end
 
 	function Utils.Create(Type, Parent, Properties)
@@ -310,11 +244,7 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 	["Start"] = Context["Start"],
 	["Version"] = Context["Version"],
 	["LoadScript"] = Context["LoadScript"],
-    ["ExecutorName"] = FunctionManager.Validate({"identifyexecutor", "identify_executor",
-		"getexecutorname", "get_executorname", "getexecutor_name", "get_executor_name"
-	}, "identifyexecutor", function()
-        return "Unknown"
-    end)(),
+    ["ExecutorName"] = IsFunction(identifyexecutor) or IsFunction(getexecutorname),
 
 	["ConnectionManager"] = ConnectionManager,
     ["ServiceManager"] = ServiceManager,
@@ -387,16 +317,15 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 	["RunService"] = RunService,
 	["Utils"] = Utils,
     ["UI"] = (function()
-        local UserInputService = ServiceManager["UserInputService"]
-        local SoundService = ServiceManager["SoundService"]
-        local TweenService = ServiceManager["TweenService"]
-        local TextService = ServiceManager["TextService"]
-        local CoreGui = ServiceManager["CoreGui"]
-        local Players = ServiceManager["Players"]
+        local UserInputService = ServiceManager.UserInputService
+        local SoundService = ServiceManager.SoundService
+        local TweenService = ServiceManager.TweenService
+        local TextService = ServiceManager.TextService
+        local CoreGui = ServiceManager.CoreGui
+        local Players = ServiceManager.Players
 
-        local setclipboard = FunctionManager.Validate({"setclipboard", "set_clipboard", "writeclipboard", "write_clipboard", "toclipboard", "to_clipboard"}, "setclipboard", nil)
-
-        local Create = Utils["Create"]
+        local setclipboard = IsFunction(setclipboard) or IsFunction(writeclipboard)
+        local Create = Utils.Create
 
         local LocalPlayer = Players.LocalPlayer
         local Mouse = LocalPlayer:GetMouse()
@@ -8255,33 +8184,23 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
     end,
 
  	["ExecutorFunctions"] = {
-		["isrenderobj"] = FunctionManager.Validate({"isrenderobj", "is_renderobj", "isrender_obj", "is_render_obj"}, "isrenderobj", function()
+		["isrenderobj"] = IsFunction(isrenderobj) or function()
             return true
-        end),
+        end,
 
-        ["newcclosure"] = FunctionManager.Validate({"newcclosure", "new_cclosure", "newc_closure", "new_c_closure"}, "newcclosure", function(LClosure)
-			return LClosure
-		end),
+        ["newcclosure"] = IsFunction(newcclosure) or function(Closure)
+			return Closure
+		end,
 
-        ["hookmetamethod"] = FunctionManager.Validate({
-            "hookmetamethod", "hook_metamethod", "hookmeta_method", "hook_meta_method"
-        }, "hookmetamethod", nil),
-        ["getnamecallmethod"] = FunctionManager.Validate({
-            "getnamecallmethod", "get_namecallmethod", "getnamecall_method", "get_namecall_method"
-        }, "getnamecallmethod", nil),
+        ["hookmetamethod"] = IsFunction(hookmetamethod),
+        ["getnamecallmethod"] = IsFunction(getnamecallmethod),
 
-        ["getgc"] = FunctionManager.Validate({
-            "getgc", "get_gc", "getgarbage", "get_garbage", "getgarbage_collector", "get_garbargecollector", "get_garbage_collector"
-        }, "getgc", nil),
+        ["getgc"] = IsFunction(getgc),
 
-        ["getupvalues"] = FunctionManager.Validate({"getupvalues", "get_upvalues", "debug.getupvalues", "debug.get_upvalues"}, "getupvalues", nil),
-        ["getupvalue"] = FunctionManager.Validate({"getupvalue", "get_upvalue", "debug.getupvalue", "debug.get_upvalue"}, "getupvalue", nil),
+        ["getupvalues"] = IsFunction(getupvalues) or IsFunction(debug.getupvalues),
+        ["getupvalue"] = IsFunction(getupvalue) or IsFunction(debug.getupvalue),
 
-        ["getsenv"] = FunctionManager.Validate({
-            "getsenv", "get_senv", "get_s_env",
-            "getscriptenvironment", "get_scriptenvironment", "getscript_environment", "get_script_environment",
-            "getscriptenv", "get_scriptenv", "getscript_env", "get_scriptenv"
-        }, "getsenv", nil),
-        ["getconnections"] = FunctionManager.Validate({"getconnections", "get_connections"}, "getconnections", nil)
+        ["getsenv"] = IsFunction(getsenv),
+        ["getconnections"] = IsFunction(getconnections)
 	}
 })
