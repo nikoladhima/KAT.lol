@@ -8214,3 +8214,5 @@ Context.LoadScript("src/Main.luau", "src/Init.luau", {
         ["getconnections"] = IsFunction(getconnections)
 	}
 })
+
+print("end of init")
