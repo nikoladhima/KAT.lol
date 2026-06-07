@@ -1,5 +1,3 @@
-print('start init')
-
 local Context = (...)
 if type(Context) ~= "table" then
     error("[KAT.lol/src/Init.luau | ERROR]: Argument must be a table.", 2)
@@ -43,6 +41,7 @@ local ConnectionManager = (function()
 
 	return ConnectionManager
 end)()
+
 
 local ServiceManager = setmetatable({}, {
     __index = function(self, Name)
@@ -8204,5 +8203,3 @@ Context.LoadScript("src/Main.luau", "src/Init.luau", {
         ["getconnections"] = IsFunction(getconnections)
 	}
 })
-
-print("end of init")
