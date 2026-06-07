@@ -20,7 +20,7 @@ local SetEnabled = Utils.SetEnabled
 local Create = Utils.Create
 local GetDistanceSquared = Utils.GetDistanceSquared
 
-local ExecutorName = NikoletoScripts.ExecutorName
+local ExecutorName = NikoletoScripts.ExecutorName()
 local ExecutorFunctions = NikoletoScripts.ExecutorFunctions
 
 local isrenderobj = ExecutorFunctions.isrenderobj
