@@ -7,13 +7,9 @@ local function IsFunction(Function)
     return typeof(Function) == "function" and Function
 end
 
-local Environment = IsFunction(getgenv)
-if not Environment then
-    game:GetService("Players").LocalPlayer:Kick("Exploit not supported.\nReason: Global Environment is missing.")
-end
-
 if not Drawing then
 	game:GetService("Players").LocalPlayer:Kick("Exploit not supported.\nReason: Drawing Library is missing.")
+    return
 end
 
 local ConnectionManager = (function()
