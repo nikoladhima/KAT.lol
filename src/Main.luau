@@ -2235,7 +2235,7 @@ local Tabs = Window.ns__Tabs
 local AimbotTab = Tabs.AimbotTab
 local SilentAimbotTab = Tabs.SilentAimbotTab
 
-local TriggerBotMain = Tab.TriggerBotMain
+local TriggerBotMain = Tabs.TriggerBotMain
 local TriggerBotChecks = Tabs.TriggerBotChecks
 
 local AntiAimTab = Tabs.AntiAimTab
