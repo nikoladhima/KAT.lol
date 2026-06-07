@@ -13,7 +13,7 @@ end
 
 local function LoadScript(Path, CurrentFileName, ...)
 	local Success, Result = xpcall(function(...)
-		return loadstring(game:HttpGet("https://raw.githubusercontent.com/nikoladhima/KAT.lol/refs/heads/main/" .. Path))(...)
+		return loadstring(game:HttpGet("https://raw.githubusercontent.com/nikoladhima/KAT.lol/main/" .. Path .. "?q=" .. tostring(tick())))(...)
 	end, function(Error)
 		return debug.traceback("LoadScript Error: " .. tostring(Error), 2)
 	end, ...)
