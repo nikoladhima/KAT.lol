@@ -5,34 +5,34 @@ end
 
 local Running = true
 
-local ConnectionManager = NikoletoScripts["ConnectionManager"]
-local ServiceManager = NikoletoScripts["ServiceManager"]
-local DrawingManager = NikoletoScripts["DrawingManager"]
-local ThreadManager = NikoletoScripts["ThreadManager"]
-local FileManager = NikoletoScripts["FileManager"]
-local RunService = NikoletoScripts["RunService"]
-local Utils = NikoletoScripts["Utils"]
-local UI = NikoletoScripts["UI"]
+local ConnectionManager = NikoletoScripts.ConnectionManager
+local ServiceManager = NikoletoScripts.ServiceManager
+local DrawingManager = NikoletoScripts.DrawingManager
+local ThreadManager = NikoletoScripts.ThreadManager
+local FileManager = NikoletoScripts.FileManager
+local RunService = NikoletoScripts.RunService
+local Utils = NikoletoScripts.Utils
+local UI = NikoletoScripts.UI
 local Window = Utils.CreateWindow(UI)
 
-local GenerateGUID = Utils["GenerateGUID"]
-local SetEnabled = Utils["SetEnabled"]
-local Create = Utils["Create"]
-local GetDistanceSquared = Utils["GetDistanceSquared"]
+local GenerateGUID = Utils.GenerateGUID
+local SetEnabled = Utils.SetEnabled
+local Create = Utils.Create
+local GetDistanceSquared = Utils.GetDistanceSquared
 
-local ExecutorName = NikoletoScripts["ExecutorName"]
-local ExecutorFunctions = NikoletoScripts["ExecutorFunctions"]
+local ExecutorName = NikoletoScripts.ExecutorName
+local ExecutorFunctions = NikoletoScripts.ExecutorFunctions
 
-local isrenderobj = ExecutorFunctions["isrenderobj"]
-local newcclosure = ExecutorFunctions["newcclosure"]
+local isrenderobj = ExecutorFunctions.isrenderobj
+local newcclosure = ExecutorFunctions.newcclosure
 
-local hookmetamethod = (not ExecutorName:lower():find("solara")) and ExecutorFunctions["hookmetamethod"]
-local getnamecallmethod = ExecutorFunctions["getnamecallmethod"]
-local getgc = ExecutorFunctions["getgc"]
+local hookmetamethod = (not ExecutorName:lower():find("solara")) and ExecutorFunctions.hookmetamethod
+local getnamecallmethod = ExecutorFunctions.getnamecallmethod
+local getgc = ExecutorFunctions.getgc
 
-local GetGunState = ExecutorFunctions["getupvalues"]
+local GetGunState = ExecutorFunctions.getupvalues
 if not GetGunState then
-	local getupvalue = ExecutorFunctions["getupvalue"]
+	local getupvalue = ExecutorFunctions.getupvalue
 	if getupvalue then
 		GetGunState = function(Function)
 			if not Function then
@@ -70,17 +70,17 @@ else
 	end
 end
 
-local getsenv = ExecutorFunctions["getsenv"]
-local getconnections = ExecutorFunctions["getconnections"]
+local getsenv = ExecutorFunctions.getsenv
+local getconnections = ExecutorFunctions.getconnections
 
-local MarketplaceService = ServiceManager["MarketplaceService"]
-local ReplicatedStorage = ServiceManager["ReplicatedStorage"]
-local UserInputService = ServiceManager["UserInputService"]
-local HttpService = ServiceManager["HttpService"]
-local Lighting = ServiceManager["Lighting"]
-local Players = ServiceManager["Players"]
-local CoreGui = ServiceManager["CoreGui"]
-local Teams = ServiceManager["Teams"]
+local MarketplaceService = ServiceManager.MarketplaceService
+local ReplicatedStorage = ServiceManager.ReplicatedStorage
+local UserInputService = ServiceManager.UserInputService
+local HttpService = ServiceManager.HttpService
+local Lighting = ServiceManager.Lighting
+local Players = ServiceManager.Players
+local CoreGui = ServiceManager.CoreGui
+local Teams = ServiceManager.Teams
 
 local CachedPlayers = {}
 local CachedPlayersList = {}
@@ -124,142 +124,142 @@ local Aimbot = {
 	Scale = false,
 	Enabled = false,
 
-	["Target"] = nil,
-	["AimPart"] = "Root",
+	Target = nil,
+	AimPart = "Root",
 
-	["StickyAim"] = true,
+	StickyAim = true,
 
-	["FOVCircle"] = {
+	FOVCircle = {
 		Enabled = false,
-		["Filled"] = false,
-		["Transparency"] = 1,
-		["Thickness"] = 1,
-		["Radius"] = 50,
-		["Color"] = Color3.fromRGB(255, 255, 255),
-		["Position"] = "Mouse"
+		Filled = false,
+		Transparency = 1,
+		Thickness = 1,
+		Radius = 50,
+		Color = Color3.fromRGB(255, 255, 255),
+		Position = "Mouse"
 	},
 
-	["ShakeOffset"] = 0,
+	ShakeOffset = 0,
 
-	["ForceFieldCheck"] = false,
-	["WallCheck"] = false,
-	["TeamCheck"] = false,
-	["DeadCheck"] = false,
+	ForceFieldCheck = false,
+	WallCheck = false,
+	TeamCheck = false,
+	DeadCheck = false,
 
-	["StopOnCheck"] = true,
+	StopOnCheck = true,
 
-	["SmoothnessOffset"] = 0
+	SmoothnessOffset = 0
 }
 
 local SilentAimbot = {
 	Scale = false,
 	Enabled = false,
 
-	["AimPart"] = "Root",
+	AimPart = "Root",
 
-	["FOVCircle"] = {
+	FOVCircle = {
 		Enabled = false,
-		["Filled"] = false,
-		["Transparency"] = 1,
-		["Thickness"] = 1,
-		["Radius"] = 50,
-		["Color"] = Color3.fromRGB(255, 255, 255),
-		["Position"] = "Mouse"
+		Filled = false,
+		Transparency = 1,
+		Thickness = 1,
+		Radius = 50,
+		Color = Color3.fromRGB(255, 255, 255),
+		Position = "Mouse"
 	},
 
-	["ForceFieldCheck"] = true,
-	["WallCheck"] = true,
-	["TeamCheck"] = false,
-	["DeadCheck"] = true
+	ForceFieldCheck = true,
+	WallCheck = true,
+	TeamCheck = false,
+	DeadCheck= true
 }
 
 local TriggerBot = {
 	Scale = false,
 	Enabled = false,
 
-	["Target"] = nil,
+	Target = nil,
 
-	["ForceFieldCheck"] = true,
-	["TeamCheck"] = false,
-	["DeadCheck"] = true,
-	["WallCheck"] = true,
-	["RevolverOnly"] = false,
+	ForceFieldCheck = true,
+	TeamCheck = false,
+	DeadCheck = true,
+	WallCheck = true,
+	RevolverOnly = false,
 
-	["TriggerDelay"] = 0.1,
-	["MaxDistance"] = 2500,
+	TriggerDelay = 0.1,
+	MaxDistance = 2500,
 }
 
 local AimbotFOVCircles = {
-	["Target"] = DrawingManager("Circle", {
-		["Color"] = Aimbot.FOVCircle.Color,
-		["Filled"] = Aimbot.FOVCircle.Filled,
-		["Thickness"] = Aimbot.FOVCircle.Thickness,
-		["Radius"] = Aimbot.FOVCircle.Radius,
-		["Visible"] = false
+	Target = DrawingManager("Circle", {
+		Color = Aimbot.FOVCircle.Color,
+		Filled = Aimbot.FOVCircle.Filled,
+		Thickness = Aimbot.FOVCircle.Thickness,
+		Radius = Aimbot.FOVCircle.Radius,
+		Visible = false
 	}),
-	["Silent"] = DrawingManager("Circle", {
-		["Color"] = SilentAimbot.FOVCircle.Color,
-		["Filled"] = SilentAimbot.FOVCircle.Filled,
-		["Thickness"] = SilentAimbot.FOVCircle.Thickness,
-		["Radius"] = SilentAimbot.FOVCircle.Radius,
-		["Visible"] = false
+	Silent = DrawingManager("Circle", {
+		Color = SilentAimbot.FOVCircle.Color,
+		Filled = SilentAimbot.FOVCircle.Filled,
+		Thickness = SilentAimbot.FOVCircle.Thickness,
+		Radius = SilentAimbot.FOVCircle.Radius,
+		Visible = false
 	})
 }
 
 local RageBot = {
-	["TargetCache"] = nil,
-	["TargetPart"] = nil,
+	TargetCache = nil,
+	TargetPart = nil,
 
-	["LastAttackTime"] = 0,
-	["IsAttacking"] = false,
+	LastAttackTime = 0,
+	IsAttacking = false,
 
 	Scale = false,
-	["Weapon"] = "Knife",
-	["AimPart"] = "Head",
-	["MultiTarget"] = true,
+	Weapon = "Knife",
+	AimPart = "Head",
+	MultiTarget = true,
 
-	["ForceFieldCheck"] = true,
-	["WallCheck"] = true,
-	["TeamCheck"] = false,
+	ForceFieldCheck = true,
+	WallCheck = true,
+	TeamCheck = false,
 
-	["CustomTargetList"] = {},
-	["MaxDistance"] = 2500,
+	CustomTargetList = {},
+	MaxDistance = 2500,
 }
 
 local RageBotTargets = {}
-local RageBotArguments = {["zSign"] = 1}
+local RageBotArguments = {zSign = 1}
 
 local HitConfiguration = {
 	Scale = false,
 
-	["Marker"] = {
+	Marker = {
 		Enabled = false,
-		["Color"] = Color3.fromRGB(255, 255, 255),
-		["Lifetime"] = 1,
-		["Scale"] = 1,
-		["Style"] = "Broken X",
-		["CenterDot"] = false,
-		["FadeIn"] = false,
-		["FadeOut"] = false,
+		Color = Color3.fromRGB(255, 255, 255),
+		Lifetime = 1,
+		Scale = 1,
+		Style = "Broken X",
+		CenterDot = false,
+		FadeIn = false,
+		FadeOut = false,
 	},
 
-	["Log"] = {
+	Log = {
 		Enabled = false,
-		["Color"] = Color3.fromRGB(255, 255, 255),
-		["UseColor"] = false,
-		["Duration"] = 1,
+		Color = Color3.fromRGB(255, 255, 255),
+		UseColor = false,
+		Duration = 1,
 	},
 
-	["Sound"] = {
+	Sound = {
 		Enabled = false,
-		["Selected"] = "Osu",
-		["Volume"] = 5
+		Selected = "Osu",
+		Volume = 5
 	},
 
-	["SavedHealth"] = {},
-	["SavedPositions"] = {},
-	["Connections"] = {},
-	["PendingHits"] = {}
+	SavedHealth = {},
+	SavedPositions = {},
+	Connections = {},
+	PendingHits = {}
 }
 local HitMarkerDirections = {
 	Vector2.new(-1, -1), Vector2.new( 1, -1),
@@ -267,39 +267,39 @@ local HitMarkerDirections = {
 }
 
 local HitSounds = {
-	["Sounds"] = {
-		["Osu"] = "7172607676",
-		["Pop"] = "102822111971881",
-		["MLG"] = "109817519733426",
-		["Metal"] = "8917041751",
-		["Neverlose"] = "18391691942",
+	Sounds = {
+		Osu = "7172607676",
+		Pop = "102822111971881",
+		MLG = "109817519733426",
+		Metal = "8917041751",
+		Neverlose = "18391691942",
 		["Jet Set Radio"] = "97113622160405",
 		["TF2 Critical"] = "8255306220",
 		["TF2 Alternative"] = "2868331684",
 		["TF2 Frying Pan"] = "18922477538",
 		["Bad Business Headshot"] = "9368845024"
 	},
-	["Folder"] = Create("Folder", CoreGui)
+	Folder = Create("Folder", CoreGui)
 }
 
 local AntiAim = {
 	Scale = false,
 	Enabled = false,
-	["Mode"] = "None",
-	["SpinBot"] = 1
+	Mode = "None",
+	SpinBot = 1
 }
 
 local LocalHighlight = {
 	Enabled = false,
-	["Color"] = Color3.fromRGB(255, 255, 255),
-	["Transparency"] = 0
+	Color = Color3.fromRGB(255, 255, 255),
+	Transparency = 0
 }
 
 local ChinaHat = {
-    ["ChinaHatTrail"] = nil,
-    ["Color"] = Color3.fromRGB(255, 0, 0),
-    ["Scale"] = Vector3.new(3, 0.6, 3),
-    ["ChinaHatTrailSize"] = Vector3.new(3, 0.7, 3),
+    ChinaHatTrail = nil,
+    Color = Color3.fromRGB(255, 0, 0),
+    Scale = Vector3.new(3, 0.6, 3),
+    ChinaHatTrailSize = Vector3.new(3, 0.7, 3),
 }
 local OldDevCameraOcclusionMode = LocalPlayer.DevCameraOcclusionMode
 
@@ -320,38 +320,38 @@ local ESPTeamCheck = false
 
 local ChamESP = {
 	Enabled = false,
-	["FillColor"] = Color3.fromRGB(255, 255, 255),
-	["OutlineColor"] = Color3.fromRGB(255, 255, 255),
-	["FillTransparency"] = 0.5,
-	["OutlineTransparency"] = 0
+	FillColor = Color3.fromRGB(255, 255, 255),
+	OutlineColor = Color3.fromRGB(255, 255, 255),
+	FillTransparency = 0.5,
+	OutlineTransparency = 0
 }
 
 local HeadTagESP, TagBuffer = {
 	Enabled = false,
-	["Color"] = Color3.fromRGB(255, 255, 255),
-	["Transparency"] = 1,
-	["Position"] = "Top"
+	Color = Color3.fromRGB(255, 255, 255),
+	Transparency = 1,
+	Position = "Top"
 }, table.create(7)
 
 local TracerESP = {
 	Enabled = false,
-	["Color"] = Color3.fromRGB(255, 255, 255),
-	["Type"] = "Locked",
-	["Part"] = "Root",
-	["Transparency"] = 1
+	Color = Color3.fromRGB(255, 255, 255),
+	Type = "Locked",
+	Part = "Root",
+	Transparency = 1
 }
 
 local BoxESP, BoxPointScreen, BoxPointOnScreen, Box3DOffsets, Box3DEdges = {
-	["Box2D"] = {
+	Box2D = {
 		Enabled = false,
-		["Color"] = Color3.fromRGB(255, 255, 255),
-		["Filled"] = false,
-		["Transparency"] = 1
+		Color = Color3.fromRGB(255, 255, 255),
+		Filled = false,
+		Transparency = 1
 	},
-	["Box3D"] = {
+	Box3D = {
 		Enabled = false,
-		["Color"] = Color3.fromRGB(255, 255, 255),
-		["Transparency"] = 1
+		Color = Color3.fromRGB(255, 255, 255),
+		Transparency = 1
 	}
 }, table.create(8), table.create(8), {
 	Vector3.new(-2, 3, -1.5), Vector3.new(2, 3, -1.5),
@@ -366,16 +366,16 @@ local BoxESP, BoxPointScreen, BoxPointOnScreen, Box3DOffsets, Box3DEdges = {
 
 local SkeletonESP = {
 	Enabled = false,    
-	["Color"] = Color3.fromRGB(255, 255, 255),
-	["Thickness"] = 1,
-	["Transparency"] = 1
+	Color = Color3.fromRGB(255, 255, 255),
+	Thickness = 1,
+	Transparency = 1
 }
 
 local World = {
-	["OldExposureCompensation"] = Lighting.ExposureCompensation,
-	["OldAmbient"] = Lighting.Ambient,
-	["OldOutdoorAmbient"] = Lighting.OutdoorAmbient,
-	["OldCameraFOV"] = nil
+	OldExposureCompensation = Lighting.ExposureCompensation,
+	OldAmbient = Lighting.Ambient,
+	OldOutdoorAmbient = Lighting.OutdoorAmbient,
+	OldCameraFOV = nil
 }
 
 local NoRecoil = false
@@ -573,7 +573,7 @@ local function CachePlayer(Player)
 		end
 	end
 
-	Cache.Root = Cache["HumanoidRootPart"]
+	Cache.Root = Cache.HumanoidRootPart
 
 	local ESP = Cache.ESP
 	if not ESP then
@@ -872,7 +872,7 @@ ConnectionManager:Connect(GenerateGUID(false), RunService.RenderStepped(function
 	local HeadTagDropdown, HeadTagPosition
 
 	if HeadTagEnabled then
-		HeadTagDropdown = Options["HeadTagOptions"]
+		HeadTagDropdown = Options.HeadTagOptions
 		HeadTagPosition = HeadTagESP.Position
 	end
 
@@ -2108,7 +2108,7 @@ task.spawn(function()
 				local AimPartPosition
 
 				if AimPart == "Random" then
-					AimPart = math.random(1, 2) == 1 and Cache["Root"] or Cache["Head"]
+					AimPart = math.random(1, 2) == 1 and Cache.Root or Cache.Head
 
 					if not AimPart then
 						continue
@@ -2231,27 +2231,27 @@ Watermark:SetVisible(true)
 
 local Tabs = Window.ns__Tabs
 
-local AimbotTab = Tabs["AimbotTab"]
-local SilentAimbotTab = Tabs["SilentAimbotTab"]
+local AimbotTab = Tabs.AimbotTab
+local SilentAimbotTab = Tabs.SilentAimbotTab
 
-local TriggerBotMain = Tabs["TriggerBotMain"]
-local TriggerBotChecks = Tabs["TriggerBotChecks"]
+local TriggerBotMain = Tab.TriggerBotMain
+local TriggerBotChecks = Tabs.TriggerBotChecks
 
-local AntiAimTab = Tabs["AntiAimTab"]
-local MovementTab = Tabs["MovementTab"]
+local AntiAimTab = Tabs.AntiAimTab
+local MovementTab = Tabs.MovementTab
 
-local LocalCharacterTab = Tabs["LocalCharacterTab"]
+local LocalCharacterTab = Tabs.LocalCharacterTab
 
-local VisualsTab = Tabs["VisualsTab"]
-local LightingTab = Tabs["LightingTab"]
+local VisualsTab = Tabs.VisualsTab
+local LightingTab = Tabs.LightingTab
 
-local WeaponsTab = Tabs["WeaponsTab"]
-local WeaponsViewTab = Tabs["WeaponsViewTab"]
+local WeaponsTab = Tabs.WeaponsTab
+local WeaponsViewTab = Tabs.WeaponsViewTab
 
-local RageBotTab = Tabs["RageBotTab"]
-local HitConfigurationTab = Tabs["HitConfigurationTab"]
+local RageBotTab = Tabs.RageBotTab
+local HitConfigurationTab = Tabs.HitConfigurationTab
 
-local SettingsTab = Tabs["SettingsTab"]
+local SettingsTab = Tabs.SettingsTab
 
 AimbotTab:AddToggle("AimbotMasterSwitch", {
 	Text = "Toggle Aimbot",
@@ -2260,7 +2260,7 @@ AimbotTab:AddToggle("AimbotMasterSwitch", {
 		Aimbot.Toggled = Value
 		if not Value then
 			StopAimbot()
-			Toggles["AimbotFOVCircle"]:SetValue(false)
+			Toggles.AimbotFOVCircle:SetValue(false)
 		end
 	end
 }):AddKeyPicker("AimbotKey", {
@@ -2292,7 +2292,7 @@ AimbotTab:AddToggle("AimbotMasterSwitch", {
 })
 
 local AimbotDependencyBox = AimbotTab:AddDependencyBox()
-AimbotDependencyBox:SetupDependencies({{Toggles["AimbotMasterSwitch"], true}})
+AimbotDependencyBox:SetupDependencies({{Toggles.AimbotMasterSwitch, true}})
 
 AimbotDependencyBox:AddDropdown("AimbotAimPart", {
 	Text = "Aim Part",
@@ -2388,12 +2388,12 @@ AimbotTab:AddToggle("AimbotFOVCircle", {
 	Transparency = 0,
 	Callback = function(Value)
 		AimbotFOVCircles.Target.Color = Value
-		AimbotFOVCircles.Target.Transparency = 1 - Options["AimbotFOVCircleColor"].Transparency
+		AimbotFOVCircles.Target.Transparency = 1 - Options.AimbotFOVCircleColor.Transparency
 	end,
 })
 
 local AimbotFOVDependencyBox = AimbotTab:AddDependencyBox()
-AimbotFOVDependencyBox:SetupDependencies({{Toggles["AimbotFOVCircle"], true}})
+AimbotFOVDependencyBox:SetupDependencies({{Toggles.AimbotFOVCircle, true}})
 
 AimbotFOVDependencyBox:AddToggle("AimbotFOVCircleFilled", {
 	Text = "Filled Circle", Default = false,
@@ -2434,7 +2434,7 @@ if hookmetamethod and getnamecallmethod then
 			if not Value then
 				SilentAimbotLabel:SetText("Silent Aimbot: Disabled")
 				SilentAimbot.Enabled = false
-				Toggles["SilentAimbotFOVCircle"]:SetValue(false)
+				Toggles.SilentAimbotFOVCircle:SetValue(false)
 			end
 		end
 	}):AddKeyPicker("SilentAimbotKey", {
@@ -2454,7 +2454,7 @@ if hookmetamethod and getnamecallmethod then
 	})
 
 	local SilentAimbotDependencyBox = SilentAimbotTab:AddDependencyBox()
-	SilentAimbotDependencyBox:SetupDependencies({{Toggles["SilentAimbotMasterSwitch"], true}})
+	SilentAimbotDependencyBox:SetupDependencies({{Toggles.SilentAimbotMasterSwitch, true}})
 
 	SilentAimbotDependencyBox:AddDropdown("SilentAimbotAimPart", {
 		Text = "Aim Part",
@@ -2503,12 +2503,12 @@ if hookmetamethod and getnamecallmethod then
 		Transparency = 0,
 		Callback = function(Value)
 			AimbotFOVCircles.Silent.Color = Value
-			AimbotFOVCircles.Silent.Transparency = 1 - Options["SilentAimbotFOVCircleColor"].Transparency
+			AimbotFOVCircles.Silent.Transparency = 1 - Options.SilentAimbotFOVCircleColor.Transparency
 		end
 	})
 
 	local SilentAimbotFOVCircleDependencyBox = SilentAimbotTab:AddDependencyBox()
-	SilentAimbotFOVCircleDependencyBox:SetupDependencies({{Toggles["SilentAimbotFOVCircle"], true}})
+	SilentAimbotFOVCircleDependencyBox:SetupDependencies({{Toggles.SilentAimbotFOVCircle, true}})
 
 	SilentAimbotFOVCircleDependencyBox:AddToggle("SilentAimbotFOVCircleFilled", {
 		Text = "Filled Circle",
@@ -2571,12 +2571,12 @@ if getsenv and GetGunState then
 		Callback = function(Value)
 			RageBot.Toggled = Value
 			if Value then
-				for _,Toggle in next, RageBot.Weapon == "Knife" and {Toggles["ForceThrow"], Toggles["RapidThrow"]} or {--[[Toggles["InfiniteAmmo"]]} do
+				for _,Toggle in next, RageBot.Weapon == "Knife" and {Toggles.ForceThrow, Toggles.RapidThrow} or {--[[Toggles.InfiniteAmmo]} do
 					Toggle:SetValue(false)
 					Toggle:SetDisabled(true)
 				end
 			else
-				for _,Toggle in next, {--[[Toggles["InfiniteAmmo"], ]]Toggles["ForceThrow"], Toggles["RapidThrow"]} do
+				for _,Toggle in next, {--[[Toggles.InfiniteAmmo, ]]Toggles.ForceThrow, Toggles.RapidThrow} do
 					Toggle:SetDisabled(false)
 				end
 			end
@@ -2847,7 +2847,7 @@ if getsenv and GetGunState then
 	})
 
 	local RageBotDependencyBox = RageBotTab:AddDependencyBox()
-	RageBotDependencyBox:SetupDependencies({{Toggles["RageBot"], true}})
+	RageBotDependencyBox:SetupDependencies({{Toggles.RageBot, true}})
 
 	--[[RageBotDependencyBox:AddDropdown("RageBotWeapon", {
 		Text = "RageBot Weapon",
@@ -2855,24 +2855,24 @@ if getsenv and GetGunState then
 		Default = 1,
 		Callback = function(Value)
 			if Value == "Knife" then
-				for Index, Toggle in next, {Toggles["ForceThrow"], Toggles["RapidThrow"]} do
+				for Index, Toggle in next, {Toggles.ForceThrow, Toggles.RapidThrow} do
 					Toggle:SetValue(false)
 					Toggle:SetDisabled(true)
 				end
-				Toggles["InfiniteAmmo"]:SetDisabled(false)
+				Toggles.InfiniteAmmo:SetDisabled(false)
 			else
-				Toggles["InfiniteAmmo"]:SetValue(false)
-				Toggles["InfiniteAmmo"]:SetDisabled(true)
-				Toggles["ForceThrow"]:SetDisabled(false)
-				Toggles["RapidThrow"]:SetDisabled(false)
+				Toggles.InfiniteAmmo:SetValue(false)
+				Toggles.InfiniteAmmo:SetDisabled(true)
+				Toggles.ForceThrow:SetDisabled(false)
+				Toggles.RapidThrow:SetDisabled(false)
 			end
 
-			if Toggles["RageBotMultiTarget"] then
+			if Toggles.RageBotMultiTarget then
 				if Value ~= "Knife" then
-					Toggles["RageBotMultiTarget"]:SetValue(false)
-					Toggles["RageBotMultiTarget"]:SetDisabled(true)
+					Toggles.RageBotMultiTarget:SetValue(false)
+					Toggles.RageBotMultiTarget:SetDisabled(true)
 				else
-					Toggles["RageBotMultiTarget"]:SetDisabled(false)
+					Toggles.RageBotMultiTarget:SetDisabled(false)
 				end
 			end
 
@@ -2946,7 +2946,7 @@ HitConfigurationTab:AddToggle("AimbotHitMasterSwitch", {
 	end
 })
 local HitConfigurationDependencyBox = HitConfigurationTab:AddDependencyBox()
-HitConfigurationDependencyBox:SetupDependencies({{Toggles["AimbotHitMasterSwitch"], true}})
+HitConfigurationDependencyBox:SetupDependencies({{Toggles.AimbotHitMasterSwitch, true}})
 HitConfigurationDependencyBox:AddDivider("Hit Markers")
 HitConfigurationDependencyBox:AddToggle("AimbotHitMarkers", {
 	Text = "Enabled",
@@ -2989,7 +2989,7 @@ HitConfigurationDependencyBox:AddDropdown("AimbotHitMarkerStyle", {
 	Default = 2,
 	Callback = function(Value)
 		HitConfiguration.Marker.Style = Value
-		Toggles["AimbotHitMarkerCenterDot"]:SetDisabled(Value == "Classic X" or Value == "Plus")
+		Toggles.AimbotHitMarkerCenterDot:SetDisabled(Value == "Classic X" or Value == "Plus")
 	end
 })
 HitConfigurationDependencyBox:AddToggle("AimbotHitMarkerCenterDot", {
@@ -3178,7 +3178,7 @@ if Click then
 	})
 
 	local TriggerBotDependencyBox = TriggerBotMain:AddDependencyBox()
-	TriggerBotDependencyBox:SetupDependencies({{Toggles["TriggerBot"], true}})
+	TriggerBotDependencyBox:SetupDependencies({{Toggles.TriggerBot, true}})
 	TriggerBotDependencyBox:AddSlider("TriggerBotTriggerDelay", {
 		Text = "Trigger Delay",
 		Default = 0.1,
@@ -3307,13 +3307,13 @@ MovementTab:AddToggle("JumpMultiplier", {
 			return
 		end
 
-		local Slider = Options["JumpMultiplierSlider"]
+		local Slider = Options.JumpMultiplierSlider
 		ConnectionManager:Connect("JumpMultiplier", RunService.Heartbeat(function()
 			if not LocalHumanoid then
 				return
 			end
 
-			local JumpMultiplier = Slider["Value"]
+			local JumpMultiplier = Slider.Value
 			if LocalHumanoid.UseJumpPower then
 				LocalHumanoid.JumpPower = 50 * JumpMultiplier
 			else
@@ -3468,7 +3468,7 @@ LocalCharacterTab:AddToggle("LocalHighlight", {
 	Transparency = LocalHighlight.Transparency,
 	Callback = function(Color)
 		LocalHighlight.Color = Color
-		LocalHighlight.Transparency = Options["HighlightColor"].Transparency
+		LocalHighlight.Transparency = Options.HighlightColor.Transparency
 	end
 })
 LocalCharacterTab:AddToggle("ChinaHat", {
@@ -3505,23 +3505,23 @@ LocalCharacterTab:AddToggle("ChinaHat", {
                 Create("SpecialMesh", CurrentHat, {
 					MeshType = Enum.MeshType.FileMesh,
 					MeshId = "http://www.roblox.com/asset/?id=1778999",
-					Scale = ChinaHat["Scale"]
+					Scale = ChinaHat.Scale
 				})
 
                 ChinaHat.ChinaHatTrail = CurrentHat
             end
 
             CurrentHat.CFrame = LocalHead.CFrame * ChinaHatCFrameOffset
-            CurrentHat.Color = ChinaHat["Color"]
+            CurrentHat.Color = ChinaHat.Color
             CurrentHat.Size = ChinaHat.ChinaHatTrailSize
             CurrentHat.Velocity = Vector3.zero
         end))
     end
 }):AddColorPicker("ChinaHatColor", {
-	Default = ChinaHat["Color"],
+	Default = ChinaHat.Color,
 	Transparency = nil,
 	Callback = function(Color)
-		ChinaHat["Color"] = Color
+		ChinaHat.Color = Color
 	end
 })
 
@@ -3568,7 +3568,7 @@ LocalCharacterTab:AddToggle("LocalTransparencyModification", {
 				return
 			end
 
-			local LocalTransparencyModifier = Options["LocalTransparencyModificationSlider"].Value
+			local LocalTransparencyModifier = Options.LocalTransparencyModificationSlider.Value
 			for _,Child in LocalCharacter:GetChildren() do
 				if Child:IsA("BasePart") then
 					Child.LocalTransparencyModifier = LocalTransparencyModifier
@@ -3594,14 +3594,14 @@ VisualsTab:AddToggle("ESPMasterSwitch", {
 	end
 })
 local VisualsDependencyBox = VisualsTab:AddDependencyBox()
-VisualsDependencyBox:SetupDependencies({{Toggles["ESPMasterSwitch"], true}})
+VisualsDependencyBox:SetupDependencies({{Toggles.ESPMasterSwitch, true}})
 VisualsDependencyBox:AddToggle("ESPDynamicRefreshRate", {
 	Text = "Dynamic Refresh Rate",
 	Tooltip = "Updates ESP depending on your FPS",
 	Default = ESPDynamicRefreshRate,
 	Callback = function(Value)
 		ESPDynamicRefreshRate = Value
-		Options["ESPRefreshRate"]:SetDisabled(Value)
+		Options.ESPRefreshRate:SetDisabled(Value)
 	end
 })
 VisualsDependencyBox:AddSlider("ESPRefreshRate", {
@@ -3662,7 +3662,7 @@ VisualsDependencyBox:AddLabel("Fill Color"):AddColorPicker("ChamFillColor", {
 	Transparency = 0,
 	Callback = function(Color)
 		ChamESP.FillColor = Color
-		ChamESP.FillTransparency = Options["ChamFillColor"].Transparency
+		ChamESP.FillTransparency = Options.ChamFillColor.Transparency
 
         for Index = 1, #CachedPlayersList do
             local Cham = CachedPlayersList[Index].ESP.Cham
@@ -3676,7 +3676,7 @@ VisualsDependencyBox:AddLabel("Outline Color"):AddColorPicker("ChamOutlineColor"
 	Transparency = 0,
 	Callback = function(Color)
 		ChamESP.OutlineColor = Color
-		ChamESP.OutlineTransparency = Options["ChamOutlineColor"].Transparency
+		ChamESP.OutlineTransparency = Options.ChamOutlineColor.Transparency
 
         for Index = 1, #CachedPlayersList do
             local Cham = CachedPlayersList[Index].ESP.Cham
@@ -3698,7 +3698,7 @@ VisualsDependencyBox:AddToggle("HeadTagESP", {
 	Transparency = 0,
 	Callback = function(Color)
 		HeadTagESP.Color = Color
-		HeadTagESP.Transparency = 1 - Options["HeadTagColor"].Transparency
+		HeadTagESP.Transparency = 1 - Options.HeadTagColor.Transparency
 
         for Index = 1, #CachedPlayersList do
             local HeadTag = CachedPlayersList[Index].ESP.HeadTag
@@ -3734,7 +3734,7 @@ VisualsDependencyBox:AddToggle("TracerESP", {
 	Transparency = 0,
 	Callback = function(Color)
 		TracerESP.Color = Color
-		TracerESP.Transparency = 1 - Options["TracerColor"].Transparency
+		TracerESP.Transparency = 1 - Options.TracerColor.Transparency
 
         for Index = 1, #CachedPlayersList do
             local Tracer = CachedPlayersList[Index].ESP.Tracer
@@ -3772,7 +3772,7 @@ VisualsDependencyBox:AddToggle("2DBoxESP", {
 	Transparency = 0,
 	Callback = function(Color)
 		BoxESP.Box2D.Color = Color
-		BoxESP.Box2D.Transparency = 1 - Options["2DBoxColor"].Transparency
+		BoxESP.Box2D.Transparency = 1 - Options.2DBoxColor.Transparency
 
         for Index = 1, #CachedPlayersList do
             local Box2D = CachedPlayersList[Index].ESP.Box2D
@@ -3804,7 +3804,7 @@ VisualsDependencyBox:AddToggle("3DBoxESP", {
 	Transparency = 0,
 	Callback = function(Color)
 		BoxESP.Box3D.Color = Color
-		BoxESP.Box3D.Transparency = 1 - Options["3DBoxColor"].Transparency
+		BoxESP.Box3D.Transparency = 1 - Options.3DBoxColor.Transparency
 
 		for Index = 1, #CachedPlayersList do
 			local Box3DLines = CachedPlayersList[Index].ESP.Box3D
@@ -3828,7 +3828,7 @@ VisualsDependencyBox:AddToggle("SkeletonESP", {
 	Transparency = 0,
 	Callback = function(Color)
 		SkeletonESP.Color = Color
-		SkeletonESP.Transparency = 1 - Options["SkeletonColor"].Transparency
+		SkeletonESP.Transparency = 1 - Options.SkeletonColor.Transparency
 
 		for Index = 1, #CachedPlayersList do
 			local SkeletonLines = CachedPlayersList[Index].ESP.Skeleton
@@ -3975,7 +3975,7 @@ LightingTab:AddButton({
 	Text = "Restore Original Exposure Compensation",
 	Func = function()
 		Lighting.ExposureCompensation = World.OldExposureCompensation
-		Options["ExposureCompensationSlider"]:SetValue(World.OldExposureCompensation)
+		Options.ExposureCompensationSlider:SetValue(World.OldExposureCompensation)
 	end
 })
 
@@ -3996,11 +3996,11 @@ LightingTab:AddButton({
 	Text = "Restore Original Ambient",
 	Func = function()
 		Lighting.Ambient = World.OldAmbient
-		Options["AmbientColor"]:SetValue(World.OldAmbient)
+		Options.AmbientColor:SetValue(World.OldAmbient)
 	end
 })
 LightingTab:AddLabel("Change Outdoor Ambient"):AddColorPicker("OutdoorAmbientColor", {
-	Default = World["OldOutdoorAmbient"],
+	Default = World.OldOutdoorAmbient,
 	Transparency = nil,
 	Callback = function(Color)
 		Lighting.OutdoorAmbient = Color
@@ -4009,14 +4009,14 @@ LightingTab:AddLabel("Change Outdoor Ambient"):AddColorPicker("OutdoorAmbientCol
 LightingTab:AddButton({
 	Text = "Save Current Outdoor Ambient as Original",
 	Func = function()
-		World["OldOutdoorAmbient"] = Lighting.OutdoorAmbient
+		World.OldOutdoorAmbient = Lighting.OutdoorAmbient
 	end
 })
 LightingTab:AddButton({
 	Text = "Restore Original Outdoor Ambient",
 	Func = function()
-		Lighting.OutdoorAmbient = World["OldOutdoorAmbient"]
-		Options["OutdoorAmbientColor"]:SetValue(World["OldOutdoorAmbient"])
+		Lighting.OutdoorAmbient = World.OldOutdoorAmbient
+		Options.OutdoorAmbientColor:SetValue(World.OldOutdoorAmbient)
 	end
 })
 
@@ -4037,19 +4037,19 @@ WeaponsViewTab:AddToggle("FOVModification", {
 		end
 
 		ConnectionManager:Connect("FOVModification", RunService.RenderStepped(function()
-			local Toggle = Camera and Toggles["FOVModification"]
+			local Toggle = Camera and Toggles.FOVModification
 			if not Toggle then
 				return
 			end
 
 			if Toggle.Value then
-				Camera.FieldOfView = Options["FOVAmountSlider"].Value
+				Camera.FieldOfView = Options.FOVAmountSlider.Value
 			end
 		end))
 	end
 })
 local WeaponsViewDependencyBox = WeaponsViewTab:AddDependencyBox()
-WeaponsViewDependencyBox:SetupDependencies({{Toggles["FOVModification"], true}})
+WeaponsViewDependencyBox:SetupDependencies({{Toggles.FOVModification, true}})
 WeaponsViewDependencyBox:AddSlider("FOVAmountSlider", {
 	Text = "FOV Amount",
 	Default = 90,
@@ -4303,7 +4303,7 @@ SettingsTab:AddLabel("Toggle menu keybind"):AddKeyPicker("MenuKeybind", {
     NoUI = true,
     Text = "Menu keybind"
 })
-UI.ToggleKeybind = Options["MenuKeybind"]
+UI.ToggleKeybind = Options.MenuKeybind
 --[[SettingsTab:AddToggle("ns__KeybindsMenu", {
 	Text = "Keybinds Menu",
 	Default = true,
@@ -4393,7 +4393,7 @@ SettingsTab:AddButton({
 	Func = function()
 		Unload()
 		print([[ // Reloading KAT.lol || Made by nikoleto scripts - github.com/nikoladhima \\ --]])
-		NikoletoScripts["LoadScript"]("Loader.lua", "Main.luau")
+		NikoletoScripts.LoadScript("Loader.lua", "Main.luau")
 	end
 })
 SettingsTab:AddButton({
@@ -4446,13 +4446,13 @@ if FileManager then
 	end
 end
 
-print("[KAT.lol/src/Main.luau | INFO]: Successfully loaded KAT.lol in", tick() - NikoletoScripts["Start"] .. "s")
+print("[KAT.lol/src/Main.luau | INFO]: Successfully loaded KAT.lol in", tick() - NikoletoScripts.Start .. "s")
 if Errors > 0 then
 	warn("[nikoletoscripts/KAT.lol]:", Errors, "Module Errors were found. Script will continue to function.")
 end
 
 ThreadManager:Start("DiscordNotifier", function()
-	if not Toggles["DisableDiscordNotification"].Value then
+	if not Toggles.DisableDiscordNotification.Value then
 		UI:Notify({
 			Title = "[[ KAT.lol ]]",
 			Description = "Friendly reminder to join the Discord Server for updates! [discord.gg/DwRT2nH93D]\nYou can disable this notification in Settings.",
