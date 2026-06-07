@@ -3773,7 +3773,7 @@ VisualsDependencyBox:AddToggle("2DBoxESP", {
 	Transparency = 0,
 	Callback = function(Color)
 		BoxESP.Box2D.Color = Color
-		BoxESP.Box2D.Transparency = 1 - Options.2DBoxColor.Transparency
+		BoxESP.Box2D.Transparency = 1 - Options["2DBoxColor"].Transparency
 
         for Index = 1, #CachedPlayersList do
             local Box2D = CachedPlayersList[Index].ESP.Box2D
@@ -3805,7 +3805,7 @@ VisualsDependencyBox:AddToggle("3DBoxESP", {
 	Transparency = 0,
 	Callback = function(Color)
 		BoxESP.Box3D.Color = Color
-		BoxESP.Box3D.Transparency = 1 - Options.3DBoxColor.Transparency
+		BoxESP.Box3D.Transparency = 1 - Options["3DBoxColor"].Transparency
 
 		for Index = 1, #CachedPlayersList do
 			local Box3DLines = CachedPlayersList[Index].ESP.Box3D
