@@ -240,7 +240,9 @@ Context["LoadScript"]("src/Main.luau", "src/Init.luau", {
 	["Start"] = Context["Start"],
 	["Version"] = Context["Version"],
 	["LoadScript"] = Context["LoadScript"],
-    ["ExecutorName"] = IsFunction(identifyexecutor) or IsFunction(getexecutorname),
+    ["ExecutorName"] = IsFunction(identifyexecutor) or IsFunction(getexecutorname) or function()
+        return "Unknown"
+    end,
 
 	["ConnectionManager"] = ConnectionManager,
     ["ServiceManager"] = ServiceManager,
