@@ -59,7 +59,7 @@ local ServiceManager = setmetatable({}, {
 })
 
 local FileManager = (function()
-	if not (isfolder and makefolder and isfile and writefile and readfile and deletefile and listfiles) then
+	if not (isfolder and makefolder and isfile and writefile and readfile and delfile and listfiles) then
 		warn("[FileManager]: Failed to load, Configuration & Theme System will not be initialized.")
 		return nil
 	end
