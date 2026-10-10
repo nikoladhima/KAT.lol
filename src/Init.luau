@@ -549,7 +549,7 @@ Context.LoadScript("src/Main.luau", "src/Init.luau", {
 
             Window = {
                 Title = "KAT.lol",
-                Footer = "v" .. Context["Version"] .. " | discord.gg/DwRT2nH93D",
+                Footer = "v" .. Context["Version"] .. " | discord.gg/DsGCKtxxEN",
                 Position = UDim2.fromOffset(6, 6),
                 Size = UDim2.fromOffset(1000, 520),
                 IconSize = UDim2.fromOffset(30, 30),
