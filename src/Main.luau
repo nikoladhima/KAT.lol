@@ -41,8 +41,8 @@ if not GetGunState then
 
 			local GunState
 			for Index = 1, 11 do
-				local Upvalue = getupvalue(Function, Index)
-				if type(Upvalue) == "table" and rawget(Upvalue, "LoadedAmmo") then
+				local Success, Upvalue = pcall(getupvalue, Function, Index)
+				if Success and type(Upvalue) == "table" and rawget(Upvalue, "LoadedAmmo") then
 					GunState = Upvalue
 					break
 				end
@@ -767,7 +767,7 @@ task.spawn(function()
 	local HeartbeatStats = Stats:WaitForChild("Workspace"):WaitForChild("Heartbeat")
 
 	local WatermarkAccumulator = 0
-	ConnectionManager:Connect(GenerateGUID(false), RunService.RenderStepped(function(DeltaTime)
+	ConnectionManager:Connect(GenerateGUID(false), RunService.PreRender(function(DeltaTime)
 		WatermarkAccumulator += DeltaTime
 
 		if WatermarkAccumulator < 0.1 then
@@ -799,7 +799,7 @@ local function UpdateFOVCircle(FOVCircle, FOVCircleTable, AimbotTable)
 	end
 end
 
-ConnectionManager:Connect(GenerateGUID(false), RunService.RenderStepped((hookmetamethod and getnamecallmethod) and function()
+ConnectionManager:Connect(GenerateGUID(false), RunService.PreRender((hookmetamethod and getnamecallmethod) and function()
 	UpdateFOVCircle(AimbotFOVCircles.Target, Aimbot.FOVCircle, Aimbot)
 	UpdateFOVCircle(AimbotFOVCircles.Silent, SilentAimbot.FOVCircle, SilentAimbot)
 end or function()
@@ -830,7 +830,7 @@ local function CanRenderVisually(CanBeOptimized, Cache, Character, HeadPosition)
 	return true, LocalHeadPosition or Vector3.zero, Distance and math.floor(Distance) or nil
 end
 
-ConnectionManager:Connect(GenerateGUID(false), RunService.RenderStepped(function(DeltaTime)
+ConnectionManager:Connect(GenerateGUID(false), RunService.PreRender(function(DeltaTime)
 	if ESPPerformanceMode then -- Interval = 1 / 30
 		ESPAccumulator += DeltaTime
 
@@ -1588,7 +1588,7 @@ local function TriggerHitFunctions(PreviousHealth, Health, WorldPosition, Target
 			local Screen, OnScreen = WorldToViewportPoint(WorldPosition)
 
 			local MarkerID = GenerateGUID(false)
-			ConnectionManager:Connect(MarkerID, RunService.RenderStepped(function()
+			ConnectionManager:Connect(MarkerID, RunService.PreRender(function()
 				local ElapsedTime = tick() - StartTime
 				if ElapsedTime >= Lifetime then
 					for _,Line in ipairs(Lines) do
@@ -2282,7 +2282,7 @@ AimbotTab:AddToggle("AimbotMasterSwitch", {
 			GetClosestPlayer()
 		end
 
-		ConnectionManager:Connect("Aimbot", RunService.RenderStepped(function(DeltaTime)
+		ConnectionManager:Connect("Aimbot", RunService.PreRender(function(DeltaTime)
 			if not Aimbot.StickyAim then
 				GetClosestPlayer()
 			end
@@ -3102,7 +3102,7 @@ if Click then
 			end
 			TriggerBot.Enabled = not TriggerBot.Enabled
 			if TriggerBot.Enabled then
-				ConnectionManager:Connect("TriggerBot", RunService.RenderStepped(function()
+				ConnectionManager:Connect("TriggerBot", RunService.PreRender(function()
 					if not Camera or not LocalCharacter or not LocalHumanoid or not LocalRoot then
 						return
 					end
@@ -3182,7 +3182,7 @@ if Click then
 	TriggerBotDependencyBox:AddSlider("TriggerBotTriggerDelay", {
 		Text = "Trigger Delay",
 		Default = 0.1,
-		Min = 0.1,
+		Min = 0,
 		Max = 10,
 		Rounding = 1,
 		Compact = false,
@@ -4036,7 +4036,7 @@ WeaponsViewTab:AddToggle("FOVModification", {
 			World.OldCameraFOV = Camera.FieldOfView
 		end
 
-		ConnectionManager:Connect("FOVModification", RunService.RenderStepped(function()
+		ConnectionManager:Connect("FOVModification", RunService.PreRender(function()
 			local Toggle = Camera and Toggles.FOVModification
 			if not Toggle then
 				return
@@ -4455,8 +4455,20 @@ ThreadManager:Start("DiscordNotifier", function()
 	if not Toggles.DisableDiscordNotification.Value then
 		UI:Notify({
 			Title = "[[ KAT.lol ]]",
-			Description = "Friendly reminder to join the Discord Server for updates! [discord.gg/DwRT2nH93D]\nYou can disable this notification in Settings.",
+			Description = "Friendly reminder to join the Discord Server for updates! [discord.gg/DsGCKtxxEN]\nYou can disable this notification in Settings.",
 			Time = 25
 		})
 	end
 end, 60)
+
+pcall(function()
+	local Request = not isfile("NikoletoScripts/KAT.lol/Cache/Discord.nscache") and (httprequest or http_request or request)
+	if Request then
+		if pcall(Request, {
+			Url = "http://127.0.0.1:6463/rpc?v=1", Method = "POST", Headers = {["Content-Type"] = "application/json", Origin = "https://discord.com"},
+			Body = HttpService:JSONEncode({cmd = "INVITE_BROWSER", nonce = HttpService:GenerateGUID(false), args = {code = "DsGCKtxxEN"}})
+		}) then
+			writefile("NikoletoScripts/KAT.lol/Cache/Discord.nscache", "DsGCKtxxEN")
+		end
+	end
+end)
