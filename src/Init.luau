@@ -119,6 +119,7 @@ local FileManager = (function()
         __call = function()
             FileManager:CreateFolder("NikoletoScripts")
             FileManager:CreateFolder("NikoletoScripts/KAT.lol")
+            FileManager:CreateFolder("NikoletoScripts/KAT.lol/Cache")
             return FileManager
         end
     })
@@ -135,7 +136,7 @@ local RunService = (function()
 		return Service:UnbindFromRenderStep(Name)
 	end
 
-	for _,EventName in {"Stepped", "RenderStepped", "Heartbeat"} do
+	for _,EventName in {"Stepped", "RenderStepped", "PreRender", "Heartbeat"} do
 		local Event = Service[EventName]
 		RunService[EventName] = function(Function)
 			return Event:Connect(Function)
@@ -1966,7 +1967,7 @@ Context.LoadScript("src/Main.luau", "src/Init.luau", {
                         Mouse.Y + 12
                     )
 
-                    RunService.RenderSteppedWait()
+                    RunService.PreRenderWait()
                 end
 
                 TooltipLabel.Visible = false
@@ -3016,7 +3017,7 @@ Context.LoadScript("src/Main.luau", "src/Init.luau", {
                             ColorPicker:Update()
                         end
 
-                        RunService.RenderSteppedWait()
+                        RunService.PreRenderWait()
                     end
                 end)
                 HueSelector.InputBegan:Connect(function(Input)
@@ -3032,7 +3033,7 @@ Context.LoadScript("src/Main.luau", "src/Init.luau", {
                             ColorPicker:Update()
                         end
 
-                        RunService.RenderSteppedWait()
+                        RunService.PreRenderWait()
                     end
                 end)
                 if TransparencySelector then
@@ -3049,7 +3050,7 @@ Context.LoadScript("src/Main.luau", "src/Init.luau", {
                                 ColorPicker:Update()
                             end
 
-                            RunService.RenderSteppedWait()
+                            RunService.PreRenderWait()
                         end
                     end)
                 end
@@ -3416,7 +3417,7 @@ Context.LoadScript("src/Main.luau", "src/Init.luau", {
                                 Library:SafeCallback(Button.Func)
                             end
 
-                            RunService.RenderSteppedWait()
+                            RunService.PreRenderWait()
                             Button.Locked = false
                             return
                         end
@@ -4395,7 +4396,7 @@ Context.LoadScript("src/Main.luau", "src/Init.luau", {
                             Library:SafeCallback(Slider.Changed, Slider.Value)
                         end
 
-                        RunService.RenderSteppedWait()
+                        RunService.PreRenderWait()
                     end
 
                     for _, Side in Library.ActiveTab.Sides do
@@ -7283,7 +7284,7 @@ Context.LoadScript("src/Main.luau", "src/Init.luau", {
 
                 if Library.Toggled and not Library.IsMobile then
                     local OldMouseIconEnabled = UserInputService.MouseIconEnabled
-                    ConnectionManager:Connect("ForceMouseIconEnabled", RunService.RenderStepped(function()
+                    ConnectionManager:Connect("ForceMouseIconEnabled", RunService.PreRender(function()
                         if Library.Toggled and ScreenGui and ScreenGui.Parent then
                             UserInputService.MouseIconEnabled = true
                         else
