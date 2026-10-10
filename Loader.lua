@@ -1,10 +1,16 @@
 --[[
-    KAT.lol | Official Loader
-    This script is Open Source and intended for learning and personal use.
+	█████   ████   █████████   ███████████    ████           ████
+	▒▒███   ███▒   ███▒▒▒▒▒███ ▒█▒▒▒███▒▒▒█   ▒▒███          ▒▒███
+	▒███  ███    ▒███    ▒███ ▒   ▒███  ▒     ▒███   ██████  ▒███
+	▒███████     ▒███████████     ▒███        ▒███  ███▒▒███ ▒███
+	▒███▒▒███    ▒███▒▒▒▒▒███     ▒███        ▒███ ▒███ ▒███ ▒███
+	▒███ ▒▒███   ▒███    ▒███     ▒███        ▒███ ▒███ ▒███ ▒███
+	█████ ▒▒████ █████   █████    █████    ██ █████▒▒██████  █████
+	▒▒▒▒▒   ▒▒▒▒ ▒▒▒▒▒   ▒▒▒▒▒    ▒▒▒▒▒    ▒▒ ▒▒▒▒▒  ▒▒▒▒▒▒  ▒▒▒▒▒
 
-    -- Made by Nikoleto Scripts
+    -- Made by Nikoleto Scripts, if you encounter issues, open a ticket in the Discord server.
     GitHub: https://github.com/nikoladhima
-    Discord: https://discord.gg/DwRT2nH93D
+    Discord: https://discord.gg/DsGCKtxxEN / @nikoleto._
 ]]
 
 if workspace.DistributedGameTime < 3 then
